@@ -1,0 +1,117 @@
+{
+  "name": "db-extension",
+  "displayName": "db-extension",
+  "description": "Connect to most databases",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.106.1"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:db-extension.helloWorld",
+    "onCommand:db-extension.showActiveFile"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "linear-regression-explorer",
+          "title": "Linear Regression",
+          "icon": "$(graph)"
+        }
+      ]
+    },
+    "views": {
+      "linear-regression-explorer": [
+        {
+          "id": "csvFileExplorer",
+          "name": "CSV Files"
+        },
+        {
+          "id": "modelConfig",
+          "name": "Model Configuration"
+        },
+        {
+          "id": "regressionHistory",
+          "name": "Regression History"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "db-extension.helloWorld",
+        "title": "Hello World"
+      },
+      {
+        "command": "db-extension.showActiveFile",
+        "title": "Show Active File"
+      },
+      {
+        "command": "db-extension.selectCsvFile",
+        "title": "📁 Select CSV File",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "db-extension.selectColumn",
+        "title": "📊 Select Column",
+        "icon": "$(symbol-number)"
+      },
+      {
+        "command": "db-extension.runLinearRegression",
+        "title": "▶️ Run Linear Regression",
+        "icon": "$(play)"
+      },
+      {
+        "command": "db-extension.restoreModel",
+        "title": "🔄 Restore Model",
+        "icon": "$(debug-restart)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "db-extension.runLinearRegression",
+          "when": "view == csvFileExplorer",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "db-extension.selectColumn",
+          "when": "view == csvFileExplorer && viewItem == column",
+          "group": "inline"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@types/vscode": "^1.106.1",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.39.1",
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.3",
+    "webpack": "^5.102.1",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "simple-statistics": "^7.8.8"
+  }
+}
