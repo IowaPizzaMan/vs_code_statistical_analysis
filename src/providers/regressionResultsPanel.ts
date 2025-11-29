@@ -36,20 +36,34 @@ export class RegressionResultsPanel {
   }
 
   public showResults(xColumns: string | string[], yColumn: string, results: any) {
-    console.log('showResults called with:', { xColumns, yColumn, results });
+    console.log('=== REGRESSION RESULTS DISPLAY ===');
+    console.log('Input parameters:', { xColumns, yColumn });
+    console.log('Results object:', results);
+    console.log('Raw values:');
+    console.log('  - intercept:', results.intercept, 'type:', typeof results.intercept);
+    console.log('  - rSquared:', results.rSquared, 'type:', typeof results.rSquared);
+    console.log('  - adjustedRSquared:', results.adjustedRSquared, 'type:', typeof results.adjustedRSquared);
+    console.log('  - slopes:', results.slopes);
+    console.log('  - xColumns:', results.xColumns);
+    console.log('  - predictions length:', results.predictions?.length);
 
     const { slopes, intercept, rSquared, adjustedRSquared, predictions, xColumns: allXCols } = results;
 
     // Helper function to format numbers with proper precision
     const formatNumber = (num: number, decimals: number = 6): string => {
       if (num === undefined || num === null || isNaN(num)) {
+        console.warn(`formatNumber: value is ${num}, returning N/A`);
         return 'N/A';
       }
       // For very small numbers, use exponential notation
       if (Math.abs(num) < 0.0001 && num !== 0) {
-        return num.toExponential(6);
+        const result = num.toExponential(6);
+        console.log(`formatNumber: small number ${num} formatted as ${result}`);
+        return result;
       }
-      return num.toFixed(decimals);
+      const result = num.toFixed(decimals);
+      console.log(`formatNumber: number ${num} formatted as ${result}`);
+      return result;
     };
 
     // Add defensive checks
@@ -65,6 +79,8 @@ export class RegressionResultsPanel {
     }
     if (rSquared === undefined || adjustedRSquared === undefined) {
       console.error('ERROR: R² values are undefined. Results object:', results);
+      console.error('  - rSquared:', rSquared);
+      console.error('  - adjustedRSquared:', adjustedRSquared);
       vscode.window.showErrorMessage('Error displaying results: missing R² values');
       return;
     }
@@ -73,6 +89,12 @@ export class RegressionResultsPanel {
       vscode.window.showErrorMessage('Error displaying results: invalid xColumns');
       return;
     }
+
+    console.log('All checks passed, building display...');
+    console.log('Formatted values:');
+    console.log('  - intercept:', formatNumber(intercept, 4));
+    console.log('  - rSquared:', formatNumber(rSquared, 6));
+    console.log('  - adjustedRSquared:', formatNumber(adjustedRSquared, 6));
 
     // Support both single and multiple columns for backwards compatibility
     const xColumnArray = Array.isArray(xColumns) ? xColumns : [xColumns];
@@ -88,6 +110,8 @@ export class RegressionResultsPanel {
       const sign = coef >= 0 ? '+' : '';
       equation += ` ${sign} ${formatNumber(coef, 4)} × ${col}`;
     });
+
+    console.log('Equation:', equation);
 
     // Build coefficient rows
     let coefficientRows = '';

@@ -148,14 +148,28 @@ export async function performLinearRegression(
 
                 // Build all X columns in order
                 const allXCols = [...actualCsvColumns, ...dummyColumnNames];
+                
+                console.log('=== REGRESSION CALCULATION ===');
+                console.log('Data loaded:', {
+                    rows: regressionData.length,
+                    yColumn,
+                    xColumns: allXCols,
+                    actualCsvColumns,
+                    dummyColumnNames
+                });
+                console.log('Y values sample (first 5):', yValues.slice(0, 5));
+                console.log('Regression data sample (first row):', regressionData.length > 0 ? regressionData[0] : 'no data');
 
                 // Extract coefficients
                 const slopes: { [key: string]: number } = {};
+                console.log('Regression object:', { m: (regression.m as any).slice(0, 5), b: regression.b });
                 for (let i = 0; i < allXCols.length; i++) {
                     slopes[allXCols[i]] = (regression.m as any)[i];
                 }
+                console.log('Slopes:', slopes);
 
                 const intercept = regression.b;
+                console.log('Intercept:', intercept, 'type:', typeof intercept);
 
                 // Calculate predictions
                 const predictions = regressionData.map(row => {
@@ -165,25 +179,38 @@ export async function performLinearRegression(
                     }
                     return pred;
                 });
+                console.log('Predictions sample (first 5):', predictions.slice(0, 5));
 
                 // Calculate R² and Adjusted R²
                 const yMean = stats.mean(yValues);
+                console.log('Y mean:', yMean);
+                
                 const ssTotal = yValues.reduce((sum, y) => sum + Math.pow(y - yMean, 2), 0);
+                console.log('SS Total:', ssTotal);
+                
                 const ssResidual = yValues.reduce(
                     (sum, y, idx) => sum + Math.pow(y - predictions[idx], 2),
                     0
                 );
+                console.log('SS Residual:', ssResidual);
 
                 // Handle edge case where all y values are identical
                 let rSquared = ssTotal === 0 ? 0 : 1 - ssResidual / ssTotal;
+                console.log('R² (before NaN check):', rSquared, 'type:', typeof rSquared);
+                
                 const n = yValues.length;
                 const p = allXCols.length;
+                console.log('Sample size (n):', n, 'Parameters (p):', p);
 
                 // Ensure valid adjusted R² calculation
                 let adjustedRSquared = rSquared;
                 if (n > p + 1) {
                     adjustedRSquared = 1 - (1 - rSquared) * ((n - 1) / (n - p - 1));
+                    console.log('Adjusted R² calculated:', adjustedRSquared);
+                } else {
+                    console.log('Adjusted R² skipped (n <= p+1)');
                 }
+                console.log('Adjusted R² (before NaN check):', adjustedRSquared, 'type:', typeof adjustedRSquared);
 
                 // Validate no NaN values
                 if (isNaN(rSquared)) {
@@ -205,6 +232,13 @@ export async function performLinearRegression(
                     });
                     adjustedRSquared = 0;
                 }
+
+                console.log('Final result:', {
+                    rSquared,
+                    adjustedRSquared,
+                    intercept,
+                    slopesCount: Object.keys(slopes).length
+                });
 
                 resolve({
                     slopes,

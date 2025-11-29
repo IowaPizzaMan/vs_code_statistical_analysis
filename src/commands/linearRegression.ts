@@ -156,6 +156,11 @@ async function runRegressionLogic(
     const xColumns = provider.getSelectedXColumns();
     const yColumn = provider.getSelectedYColumn();
 
+    console.log('=== REGRESSION COMMAND EXECUTION ===');
+    console.log('File:', file);
+    console.log('X Columns:', xColumns);
+    console.log('Y Column:', yColumn);
+
     if (!file) {
         vscode.window.showErrorMessage('No CSV file selected. Please select a file first.');
         return;
@@ -182,8 +187,10 @@ async function runRegressionLogic(
                 dummyVariablesData[col] = dummies;
             }
         }
+        console.log('Dummy variables data:', dummyVariablesData);
 
         const results = await performLinearRegression(file, xColumns, yColumn, dummyVariablesData);
+        console.log('Results from performLinearRegression:', results);
 
         // Record in history
         historyService.addEntry(
@@ -209,6 +216,7 @@ async function runRegressionLogic(
         // Create or show the results panel
         RegressionResultsPanel.createOrShow(extensionUri);
         if (RegressionResultsPanel.currentPanel) {
+            console.log('About to show results with:', { xColumns, yColumn, results });
             RegressionResultsPanel.currentPanel.showResults(xColumns, yColumn, results);
         }
 
