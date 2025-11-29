@@ -68,6 +68,18 @@
         "command": "db-extension.restoreModel",
         "title": "🔄 Restore Model",
         "icon": "$(debug-restart)"
+      },
+      {
+        "command": "db-extension.removeXColumn",
+        "title": "❌ Remove X Column"
+      },
+      {
+        "command": "db-extension.removeYColumn",
+        "title": "❌ Remove Y Column"
+      },
+      {
+        "command": "db-extension.removeDummyColumn",
+        "title": "❌ Remove Dummy Column"
       }
     ],
     "menus": {
@@ -82,6 +94,21 @@
         {
           "command": "db-extension.selectColumn",
           "when": "view == csvFileExplorer && viewItem == column",
+          "group": "inline"
+        },
+        {
+          "command": "db-extension.removeXColumn",
+          "when": "view == modelConfig && viewItem == xcol-item",
+          "group": "inline"
+        },
+        {
+          "command": "db-extension.removeYColumn",
+          "when": "view == modelConfig && viewItem == ycol-item",
+          "group": "inline"
+        },
+        {
+          "command": "db-extension.removeDummyColumn",
+          "when": "view == modelConfig && viewItem == dummy-item",
           "group": "inline"
         }
       ]

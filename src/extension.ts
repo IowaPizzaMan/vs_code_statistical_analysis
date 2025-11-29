@@ -63,6 +63,34 @@ export function activate(context: vscode.ExtensionContext) {
 		historyProvider
 	);
 	linearRegressionDisposables.forEach(d => context.subscriptions.push(d));
+
+	// Register model config remove commands
+	context.subscriptions.push(
+		vscode.commands.registerCommand('db-extension.removeXColumn', (item: any) => {
+			const columnName = item.columnName || item.label;
+			linearRegressionProvider.removeSelectedXColumn(columnName);
+			modelConfigProvider.removeXColumn(columnName);
+			vscode.window.showInformationMessage(`Removed X column: ${columnName}`);
+		})
+	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('db-extension.removeYColumn', () => {
+			linearRegressionProvider.setSelectedYColumn(null);
+			modelConfigProvider.removeYColumn();
+			vscode.window.showInformationMessage('Removed Y column');
+		})
+	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('db-extension.removeDummyColumn', (item: any) => {
+			const columnName = item.columnName || item.label;
+			// Remove from selected X columns
+			linearRegressionProvider.removeSelectedXColumn(columnName);
+			modelConfigProvider.removeDummyColumn(columnName);
+			vscode.window.showInformationMessage(`Removed dummy column: ${columnName}`);
+		})
+	);
 }
 
 // This method is called when your extension is deactivated

@@ -136,6 +136,21 @@ export class ModelConfigProvider implements vscode.TreeDataProvider<ConfigItem> 
     getDummyColumns(): string[] {
         return this.dummyColumns;
     }
+
+    removeXColumn(column: string): void {
+        this.xColumns = this.xColumns.filter(col => col !== column);
+        this.refresh();
+    }
+
+    removeYColumn(): void {
+        this.yColumn = null;
+        this.refresh();
+    }
+
+    removeDummyColumn(column: string): void {
+        this.dummyColumns = this.dummyColumns.filter(col => col !== column);
+        this.refresh();
+    }
 }
 
 export class ConfigItem extends vscode.TreeItem {
