@@ -10,6 +10,97 @@ export interface RegressionResult {
     xColumns: string[];
 }
 
+// Helper function for multivariate linear regression using matrix algebra
+function multipleLinearRegression(X: number[][], y: number[]): { intercept: number; slopes: number[] } {
+    const n = X.length;
+    const p = X[0].length;
+
+    // Create design matrix [1, x1, x2, ..., xp]
+    const designMatrix: number[][] = [];
+    for (let i = 0; i < n; i++) {
+        designMatrix[i] = [1, ...X[i]];
+    }
+
+    // Calculate X^T * X
+    const XtX: number[][] = [];
+    for (let i = 0; i < p + 1; i++) {
+        XtX[i] = [];
+        for (let j = 0; j < p + 1; j++) {
+            let sum = 0;
+            for (let k = 0; k < n; k++) {
+                sum += designMatrix[k][i] * designMatrix[k][j];
+            }
+            XtX[i][j] = sum;
+        }
+    }
+
+    // Calculate X^T * y
+    const Xty: number[] = [];
+    for (let i = 0; i < p + 1; i++) {
+        let sum = 0;
+        for (let k = 0; k < n; k++) {
+            sum += designMatrix[k][i] * y[k];
+        }
+        Xty[i] = sum;
+    }
+
+    // Solve (X^T * X) * beta = X^T * y using Gaussian elimination
+    const beta = gaussianElimination(XtX, Xty);
+
+    return {
+        intercept: beta[0],
+        slopes: beta.slice(1)
+    };
+}
+
+// Gaussian elimination for solving Ax = b
+function gaussianElimination(A: number[][], b: number[]): number[] {
+    const n = A.length;
+    
+    // Forward elimination
+    for (let i = 0; i < n; i++) {
+        // Find pivot
+        let maxRow = i;
+        for (let k = i + 1; k < n; k++) {
+            if (Math.abs(A[k][i]) > Math.abs(A[maxRow][i])) {
+                maxRow = k;
+            }
+        }
+
+        // Swap rows
+        [A[i], A[maxRow]] = [A[maxRow], A[i]];
+        [b[i], b[maxRow]] = [b[maxRow], b[i]];
+
+        // Make all rows below this one 0 in current column
+        for (let k = i + 1; k < n; k++) {
+            if (A[i][i] === 0) {
+                continue; // Skip if pivot is 0
+            }
+            const factor = A[k][i] / A[i][i];
+            for (let j = i; j < n; j++) {
+                A[k][j] -= factor * A[i][j];
+            }
+            b[k] -= factor * b[i];
+        }
+    }
+
+    // Back substitution
+    const x: number[] = [];
+    for (let i = n - 1; i >= 0; i--) {
+        if (Math.abs(A[i][i]) < 1e-10) {
+            x[i] = 0; // Singular matrix case
+            continue;
+        }
+        x[i] = b[i];
+        for (let j = i + 1; j < n; j++) {
+            x[i] -= A[i][j] * x[j];
+        }
+        x[i] /= A[i][i];
+    }
+
+    return x;
+}
+
 export async function performLinearRegression(
     filePath: string,
     xColumns: string[],
@@ -78,6 +169,7 @@ export async function performLinearRegression(
                 }
 
                 // Build regression data: [x1, x2, ..., dummy1, dummy2, ..., y]
+
                 const regressionData: number[][] = [];
                 const yValues: number[] = [];
 
@@ -138,17 +230,9 @@ export async function performLinearRegression(
                     throw new Error('Not enough valid rows with numeric data for regression');
                 }
 
-                // Build regression points: [...xValues, yValue]
-                const regressionPoints = regressionData.map((row, idx) => [...row, yValues[idx]]);
-                const regression = stats.linearRegression(regressionPoints as any);
-
-                if (!regression) {
-                    throw new Error('Failed to calculate linear regression');
-                }
-
                 // Build all X columns in order
                 const allXCols = [...actualCsvColumns, ...dummyColumnNames];
-                
+
                 console.log('=== REGRESSION CALCULATION ===');
                 console.log('Data loaded:', {
                     rows: regressionData.length,
@@ -160,15 +244,22 @@ export async function performLinearRegression(
                 console.log('Y values sample (first 5):', yValues.slice(0, 5));
                 console.log('Regression data sample (first row):', regressionData.length > 0 ? regressionData[0] : 'no data');
 
+                // Calculate multivariate regression using matrix algebra
+                const regression = multipleLinearRegression(regressionData, yValues);
+                
+                console.log('Regression result:', {
+                    intercept: regression.intercept,
+                    slopes: regression.slopes
+                });
+
                 // Extract coefficients
                 const slopes: { [key: string]: number } = {};
-                console.log('Regression object:', { m: (regression.m as any).slice(0, 5), b: regression.b });
                 for (let i = 0; i < allXCols.length; i++) {
-                    slopes[allXCols[i]] = (regression.m as any)[i];
+                    slopes[allXCols[i]] = regression.slopes[i];
                 }
                 console.log('Slopes:', slopes);
 
-                const intercept = regression.b;
+                const intercept = regression.intercept;
                 console.log('Intercept:', intercept, 'type:', typeof intercept);
 
                 // Calculate predictions
@@ -184,10 +275,10 @@ export async function performLinearRegression(
                 // Calculate R² and Adjusted R²
                 const yMean = stats.mean(yValues);
                 console.log('Y mean:', yMean);
-                
+
                 const ssTotal = yValues.reduce((sum, y) => sum + Math.pow(y - yMean, 2), 0);
                 console.log('SS Total:', ssTotal);
-                
+
                 const ssResidual = yValues.reduce(
                     (sum, y, idx) => sum + Math.pow(y - predictions[idx], 2),
                     0
@@ -197,7 +288,7 @@ export async function performLinearRegression(
                 // Handle edge case where all y values are identical
                 let rSquared = ssTotal === 0 ? 0 : 1 - ssResidual / ssTotal;
                 console.log('R² (before NaN check):', rSquared, 'type:', typeof rSquared);
-                
+
                 const n = yValues.length;
                 const p = allXCols.length;
                 console.log('Sample size (n):', n, 'Parameters (p):', p);
