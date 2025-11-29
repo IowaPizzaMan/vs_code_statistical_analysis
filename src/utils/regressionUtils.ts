@@ -36,15 +36,22 @@ export async function performLinearRegression(
                     throw new Error(`Column "${yColumn}" not found in CSV`);
                 }
 
-                // Separate original columns from dummy variable names
+                // Separate actual CSV columns from dummy variable names
                 const actualCsvColumns = xColumns.filter(col => headers.includes(col));
 
-                // Identify which columns are dummy variables (not in CSV headers)
+                // Extract dummy variable categories for each column
+                const dummyCategoryMap: { [colName: string]: string[] } = {};
                 const dummyColumnNames: string[] = [];
+
                 if (dummyVariables) {
                     for (const colName in dummyVariables) {
-                        for (const dummyName in dummyVariables[colName]) {
-                            dummyColumnNames.push(dummyName);
+                        // dummyVariables[colName] is { [categoryName]: number[] }
+                        const categories = Object.keys(dummyVariables[colName]);
+                        dummyCategoryMap[colName] = categories;
+
+                        // Add dummy names (skip first category as reference)
+                        for (let i = 1; i < categories.length; i++) {
+                            dummyColumnNames.push(`${colName}_${categories[i]}`);
                         }
                     }
                 }
@@ -59,59 +66,87 @@ export async function performLinearRegression(
                     xIndices[xCol] = idx;
                 }
 
-                // Parse data and apply dummy variables if provided
+                // Get indices for dummy variable source columns
+                const dummySourceIndices: { [colName: string]: number } = {};
+                for (const colName in dummyCategoryMap) {
+                    const idx = headers.indexOf(colName);
+                    if (idx === -1) {
+                        console.warn(`Dummy variable source column "${colName}" not found in CSV`);
+                    } else {
+                        dummySourceIndices[colName] = idx;
+                    }
+                }
+
+                // Build regression data: [x1, x2, ..., dummy1, dummy2, ..., y]
+                const regressionData: number[][] = [];
                 const yValues: number[] = [];
-                const xMatrix: number[][] = [];
 
                 for (let i = 1; i < lines.length; i++) {
                     const values = lines[i].split(',').map(v => v.trim());
-                    const y = parseFloat(values[yIndex]);
 
-                    if (isNaN(y)) {
+                    // Parse Y value
+                    const yVal = parseFloat(values[yIndex]);
+                    if (isNaN(yVal)) {
+                        console.warn(`Row ${i}: Y value "${values[yIndex]}" is not numeric, skipping row`);
                         continue;
                     }
 
-                    const row: number[] = [];
+                    const dataRow: number[] = [];
                     let skipRow = false;
 
-                    // Add values for actual CSV columns (non-dummy)
+                    // Add actual X column values (convert to numeric)
                     for (const xCol of actualCsvColumns) {
                         const xIdx = xIndices[xCol];
-                        const x = parseFloat(values[xIdx]);
-                        if (isNaN(x)) {
+                        const xVal = parseFloat(values[xIdx]);
+                        if (isNaN(xVal)) {
+                            console.warn(`Row ${i}: X value "${values[xIdx]}" in column "${xCol}" is not numeric, skipping row`);
                             skipRow = true;
                             break;
                         }
-                        row.push(x);
+                        dataRow.push(xVal);
                     }
 
                     if (skipRow) {
                         continue;
                     }
 
-                    // Add dummy variables if provided
+                    // Add dummy variables as 0/1 values based on category match
                     if (dummyVariables) {
-                        for (const colName in dummyVariables) {
-                            for (const dummyName in dummyVariables[colName]) {
-                                row.push(dummyVariables[colName][dummyName][yValues.length]);
+                        for (const colName in dummyCategoryMap) {
+                            const categories = dummyCategoryMap[colName];
+                            const sourceIdx = dummySourceIndices[colName];
+
+                            if (sourceIdx === undefined) {
+                                continue;
+                            }
+
+                            const cellValue = values[sourceIdx];
+
+                            // Add dummy for each category except the first (reference)
+                            for (let catIdx = 1; catIdx < categories.length; catIdx++) {
+                                const isDummy = cellValue === categories[catIdx] ? 1 : 0;
+                                dataRow.push(isDummy);
                             }
                         }
                     }
 
-                    yValues.push(y);
-                    xMatrix.push(row);
+                    regressionData.push(dataRow);
+                    yValues.push(yVal);
                 }
 
-                if (xMatrix.length < actualCsvColumns.length + 2) {
-                    throw new Error('Not enough valid data points for regression');
+                if (regressionData.length < 2) {
+                    throw new Error('Not enough valid rows with numeric data for regression');
                 }
 
-                // Use simple-statistics for multivariate regression
-                const regressionPoints = xMatrix.map((row, i) => [...row, yValues[i]]);
+                // Build regression points: [...xValues, yValue]
+                const regressionPoints = regressionData.map((row, idx) => [...row, yValues[idx]]);
                 const regression = stats.linearRegression(regressionPoints as any);
 
-                // Build allXCols in the correct order matching the matrix construction
-                // Order: actual CSV columns first, then dummy variables
+                if (!regression) {
+                    throw new Error('Failed to calculate linear regression');
+                }
+
+                // Build all X columns in order
                 const allXCols = [...actualCsvColumns, ...dummyColumnNames];
 
                 // Extract coefficients
@@ -122,8 +157,8 @@ export async function performLinearRegression(
 
                 const intercept = regression.b;
 
-                // Calculate predictions using the correct column order
-                const predictions = xMatrix.map(row => {
+                // Calculate predictions
+                const predictions = regressionData.map(row => {
                     let pred = intercept;
                     for (let i = 0; i < row.length; i++) {
                         pred += slopes[allXCols[i]] * row[i];
@@ -135,24 +170,22 @@ export async function performLinearRegression(
                 const yMean = stats.mean(yValues);
                 const ssTotal = yValues.reduce((sum, y) => sum + Math.pow(y - yMean, 2), 0);
                 const ssResidual = yValues.reduce(
-                    (sum, y, i) => sum + Math.pow(y - predictions[i], 2),
+                    (sum, y, idx) => sum + Math.pow(y - predictions[idx], 2),
                     0
                 );
 
                 // Handle edge case where all y values are identical
-                const rSquared = ssTotal === 0 ? 0 : 1 - ssResidual / ssTotal;
+                let rSquared = ssTotal === 0 ? 0 : 1 - ssResidual / ssTotal;
                 const n = yValues.length;
                 const p = allXCols.length;
 
                 // Ensure valid adjusted R² calculation
-                let adjustedRSquared = 0;
+                let adjustedRSquared = rSquared;
                 if (n > p + 1) {
                     adjustedRSquared = 1 - (1 - rSquared) * ((n - 1) / (n - p - 1));
-                } else {
-                    adjustedRSquared = rSquared; // Not enough data for meaningful adjusted R²
                 }
 
-                // Check for NaN values and log for debugging
+                // Validate no NaN values
                 if (isNaN(rSquared)) {
                     console.error('NaN detected in rSquared calculation', {
                         ssTotal,
@@ -161,22 +194,23 @@ export async function performLinearRegression(
                         yValues: yValues.slice(0, 5),
                         predictions: predictions.slice(0, 5)
                     });
+                    rSquared = 0;
                 }
 
                 if (isNaN(adjustedRSquared)) {
                     console.error('NaN detected in adjustedRSquared calculation', {
                         rSquared,
                         n,
-                        p,
-                        calculation: `1 - (1 - ${rSquared}) * ((${n} - 1) / (${n} - ${p} - 1))`
+                        p
                     });
+                    adjustedRSquared = 0;
                 }
 
                 resolve({
                     slopes,
                     intercept,
-                    rSquared: isNaN(rSquared) ? 0 : rSquared,
-                    adjustedRSquared: isNaN(adjustedRSquared) ? 0 : adjustedRSquared,
+                    rSquared,
+                    adjustedRSquared,
                     predictions,
                     xColumns: allXCols
                 });
