@@ -1,71 +1,52 @@
-# db-extension README
+# VS Code Statistical Analysis Extension
 
-This is the README for your extension "db-extension". After writing up a brief description, we recommend including the following sections.
+VS Code Extension for performing statistical analysis on CSV files, specifically linear regression analysis with support for multiple predictors and dummy variables.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+- **CSV File Discovery**: Browse and select CSV files from your workspace
+- **Linear Regression Analysis**: Perform single and multivariate linear regression
+- **Multiple Predictors**: Select multiple independent variables (X columns) for regression
+- **Dummy Variables**: Automatically create dummy variables from categorical columns
+- **Results Visualization**: View regression results in a dedicated webview panel with:
+  - Regression equation
+  - Coefficients for all predictors
+  - R² and Adjusted R² statistics
+  - Model interpretation
+- **Model Configuration Display**: Real-time view of selected X and Y columns
+- **Regression History**: Track up to 50 previous regressions with the ability to restore models
+- **Interactive Sidebar**: Manage analysis workflow through tree views in the sidebar
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- VS Code 1.106.0 or higher
+- Node.js 18+ (for development)
+
+## How to Use
+
+1. Open a CSV file in your workspace
+2. Click the "Run Linear Regression" view in the sidebar
+3. Select your CSV file
+4. Choose columns:
+   - X (Independent) variables - select one or more
+   - Y (Dependent) variable - select one
+   - Optionally create dummy variables from categorical columns
+5. Run the regression to see results
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+None currently. Future versions may add configuration options.
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+See FIX_SUMMARY.md for details on bug fixes and improvements.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.1.0
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Initial release with core functionality:
+- Linear regression with multiple predictors
+- Dummy variable creation
+- Model history tracking
+- Results visualization
