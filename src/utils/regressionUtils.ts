@@ -37,12 +37,17 @@ export async function performLinearRegression(
                 }
 
                 // Separate original columns from dummy variable names
-                const originalXColumns = xColumns.filter(col => {
-                    // A column is original if it's in the headers or is a dummy variable name
-                    return headers.includes(col) || (dummyVariables && Object.values(dummyVariables).some(dummies => col in dummies));
-                });
-                
-                const actualCsvColumns = originalXColumns.filter(col => headers.includes(col));
+                const actualCsvColumns = xColumns.filter(col => headers.includes(col));
+
+                // Identify which columns are dummy variables (not in CSV headers)
+                const dummyColumnNames: string[] = [];
+                if (dummyVariables) {
+                    for (const colName in dummyVariables) {
+                        for (const dummyName in dummyVariables[colName]) {
+                            dummyColumnNames.push(dummyName);
+                        }
+                    }
+                }
 
                 // Validate all actual CSV X columns exist
                 const xIndices: { [key: string]: number } = {};
@@ -105,15 +110,9 @@ export async function performLinearRegression(
                 const regressionPoints = xMatrix.map((row, i) => [...row, yValues[i]]);
                 const regression = stats.linearRegression(regressionPoints as any);
 
-                // Build allXCols in the correct order: actual columns first, then dummies
-                const allXCols = [...actualCsvColumns];
-                if (dummyVariables) {
-                    for (const colName in dummyVariables) {
-                        for (const dummyName in dummyVariables[colName]) {
-                            allXCols.push(dummyName);
-                        }
-                    }
-                }
+                // Build allXCols in the correct order matching the matrix construction
+                // Order: actual CSV columns first, then dummy variables
+                const allXCols = [...actualCsvColumns, ...dummyColumnNames];
 
                 // Extract coefficients
                 const slopes: { [key: string]: number } = {};
@@ -123,12 +122,12 @@ export async function performLinearRegression(
 
                 const intercept = regression.b;
 
-                // Calculate predictions
+                // Calculate predictions using the correct column order
                 const predictions = xMatrix.map(row => {
                     let pred = intercept;
-                    row.forEach((x, i) => {
-                        pred += slopes[allXCols[i]] * x;
-                    });
+                    for (let i = 0; i < row.length; i++) {
+                        pred += slopes[allXCols[i]] * row[i];
+                    }
                     return pred;
                 });
 
@@ -153,11 +152,31 @@ export async function performLinearRegression(
                     adjustedRSquared = rSquared; // Not enough data for meaningful adjusted R²
                 }
 
+                // Check for NaN values and log for debugging
+                if (isNaN(rSquared)) {
+                    console.error('NaN detected in rSquared calculation', {
+                        ssTotal,
+                        ssResidual,
+                        yMean,
+                        yValues: yValues.slice(0, 5),
+                        predictions: predictions.slice(0, 5)
+                    });
+                }
+
+                if (isNaN(adjustedRSquared)) {
+                    console.error('NaN detected in adjustedRSquared calculation', {
+                        rSquared,
+                        n,
+                        p,
+                        calculation: `1 - (1 - ${rSquared}) * ((${n} - 1) / (${n} - ${p} - 1))`
+                    });
+                }
+
                 resolve({
                     slopes,
                     intercept,
-                    rSquared,
-                    adjustedRSquared,
+                    rSquared: isNaN(rSquared) ? 0 : rSquared,
+                    adjustedRSquared: isNaN(adjustedRSquared) ? 0 : adjustedRSquared,
                     predictions,
                     xColumns: allXCols
                 });
