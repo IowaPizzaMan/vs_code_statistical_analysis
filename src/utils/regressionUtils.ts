@@ -36,9 +36,17 @@ export async function performLinearRegression(
                     throw new Error(`Column "${yColumn}" not found in CSV`);
                 }
 
-                // Validate all X columns exist
+                // Separate original columns from dummy variable names
+                const originalXColumns = xColumns.filter(col => {
+                    // A column is original if it's in the headers or is a dummy variable name
+                    return headers.includes(col) || (dummyVariables && Object.values(dummyVariables).some(dummies => col in dummies));
+                });
+                
+                const actualCsvColumns = originalXColumns.filter(col => headers.includes(col));
+
+                // Validate all actual CSV X columns exist
                 const xIndices: { [key: string]: number } = {};
-                for (const xCol of xColumns) {
+                for (const xCol of actualCsvColumns) {
                     const idx = headers.indexOf(xCol);
                     if (idx === -1) {
                         throw new Error(`Column "${xCol}" not found in CSV`);
@@ -61,8 +69,8 @@ export async function performLinearRegression(
                     const row: number[] = [];
                     let skipRow = false;
 
-                    // Add original X columns
-                    for (const xCol of xColumns) {
+                    // Add values for actual CSV columns (non-dummy)
+                    for (const xCol of actualCsvColumns) {
                         const xIdx = xIndices[xCol];
                         const x = parseFloat(values[xIdx]);
                         if (isNaN(x)) {
@@ -89,7 +97,7 @@ export async function performLinearRegression(
                     xMatrix.push(row);
                 }
 
-                if (xMatrix.length < xColumns.length + 2) {
+                if (xMatrix.length < actualCsvColumns.length + 2) {
                     throw new Error('Not enough valid data points for regression');
                 }
 
@@ -97,9 +105,8 @@ export async function performLinearRegression(
                 const regressionPoints = xMatrix.map((row, i) => [...row, yValues[i]]);
                 const regression = stats.linearRegression(regressionPoints as any);
 
-                // Extract coefficients
-                const slopes: { [key: string]: number } = {};
-                const allXCols = [...xColumns];
+                // Build allXCols in the correct order: actual columns first, then dummies
+                const allXCols = [...actualCsvColumns];
                 if (dummyVariables) {
                     for (const colName in dummyVariables) {
                         for (const dummyName in dummyVariables[colName]) {
@@ -108,6 +115,8 @@ export async function performLinearRegression(
                     }
                 }
 
+                // Extract coefficients
+                const slopes: { [key: string]: number } = {};
                 for (let i = 0; i < allXCols.length; i++) {
                     slopes[allXCols[i]] = (regression.m as any)[i];
                 }
