@@ -1,0 +1,161 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36" version="29.2.1">
+  <diagram name="Architecture" id="dGI7KE7lx4YyeAxmLmVy">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Title -->
+        <mxCell id="title" value="VS Code Statistical Analysis Extension - Architecture" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;fontSize=18;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="400" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- Extension Core Layer -->
+        <mxCell id="ext_core" value="extension.ts&#xa;(Entry Point)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="450" y="80" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Providers Layer -->
+        <mxCell id="providers_label" value="Providers (Tree Views)" style="text;html=1;align=center;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="200" width="150" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="linear_reg_provider" value="LinearRegressionProvider&#xa;• CSV file discovery&#xa;• Column selection&#xa;• Tree view display" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D4E6F1;strokeColor=#3498DB;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="30" y="240" width="180" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="model_config_provider" value="ModelConfigProvider&#xa;• Display X columns&#xa;• Display Y column&#xa;• Show dummy variables" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D4E6F1;strokeColor=#3498DB;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="260" y="240" width="180" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="history_provider" value="HistoryProvider&#xa;• Regression history list&#xa;• Model metadata&#xa;• Restore capability" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D4E6F1;strokeColor=#3498DB;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="490" y="240" width="180" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="results_panel" value="RegressionResultsPanel&#xa;• Webview display&#xa;• Results rendering&#xa;• Error handling" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D4E6F1;strokeColor=#3498DB;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="720" y="240" width="180" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Commands Layer -->
+        <mxCell id="commands_label" value="Commands" style="text;html=1;align=center;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="400" width="100" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="hello_world_cmd" value="helloWorld&#xa;Simple demo command" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F9E79F;strokeColor=#F39C12;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="30" y="440" width="140" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="show_file_cmd" value="showActiveFile&#xa;Display active file" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F9E79F;strokeColor=#F39C12;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="215" y="440" width="140" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="linear_reg_cmd" value="linearRegression&#xa;Main regression logic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F9E79F;strokeColor=#F39C12;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="400" y="440" width="140" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Services Layer -->
+        <mxCell id="services_label" value="Services" style="text;html=1;align=center;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="600" y="400" width="100" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="history_service" value="RegressionHistoryService&#xa;• Store entries (max 50)&#xa;• Retrieve by ID&#xa;• Clear history" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5F4E6;strokeColor=#27AE60;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="600" y="440" width="180" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Utilities Layer -->
+        <mxCell id="utils_label" value="Utilities" style="text;html=1;align=center;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="580" width="100" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="regression_utils" value="regressionUtils&#xa;• performLinearRegression()&#xa;• Multivariate support&#xa;• R² calculations&#xa;• Edge case handling" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FADBD8;strokeColor=#E74C3C;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="30" y="620" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="dummy_utils" value="dummyVariableUtils&#xa;• detectCategorical()&#xa;• createDummyVariables()&#xa;• One-hot encoding" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FADBD8;strokeColor=#E74C3C;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="290" y="620" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Data Flow -->
+        <mxCell id="data_flow_label" value="Data Flow" style="text;html=1;align=center;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="550" y="580" width="100" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="csv_data" value="CSV Files&#xa;(User Workspace)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EBF5FB;strokeColor=#5DADE2;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="550" y="620" width="150" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Dependencies -->
+        <mxCell id="deps_label" value="Dependencies" style="text;html=1;align=center;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="780" y="580" width="100" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="simple_stats" value="simple-statistics&#xa;Linear regression math" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCF3CF;strokeColor=#F1C40F;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="760" y="620" width="150" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Connectors -->
+        <mxCell id="ext_to_providers" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8" edge="1" parent="1" source="ext_core" target="linear_reg_provider">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ext_to_model_config" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8" edge="1" parent="1" source="ext_core" target="model_config_provider">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ext_to_history" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8" edge="1" parent="1" source="ext_core" target="history_provider">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ext_to_results" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8" edge="1" parent="1" source="ext_core" target="results_panel">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="cmd_to_regression" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;dashed=1" edge="1" parent="1" source="linear_reg_cmd" target="linear_reg_provider">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="cmd_to_history_service" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;dashed=1" edge="1" parent="1" source="linear_reg_cmd" target="history_service">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="cmd_to_regression_utils" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;dashed=1" edge="1" parent="1" source="linear_reg_cmd" target="regression_utils">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="regression_utils_to_simple_stats" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;dashed=1" edge="1" parent="1" source="regression_utils" target="simple_stats">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="dummy_utils_connection" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;dashed=1" edge="1" parent="1" source="dummy_utils" target="regression_utils">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="regression_utils_to_results" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endSize=8;dashed=1" edge="1" parent="1" source="regression_utils" target="results_panel">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Legend -->
+        <mxCell id="legend_title" value="Legend:" style="text;html=1;align=left;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="780" width="60" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="solid_line" value="Direct initialization" style="text;html=1;align=left;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="120" y="775" width="140" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="dashed_line" value="Function calls / Data flow" style="text;html=1;align=left;fontSize=9" vertex="1" parent="1">
+          <mxGeometry x="120" y="805" width="140" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="feature_list_title" value="Key Features Implemented:" style="text;html=1;align=left;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="350" y="780" width="180" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="features" value="✓ CSV file discovery&#xa;✓ Column selection (X, Y)&#xa;✓ Multivariate regression&#xa;✓ Dummy variables&#xa;✓ Results visualization&#xa;✓ Model history (50 entries)&#xa;✓ Error handling" style="text;html=1;align=left;fontSize=9;whiteSpace=wrap" vertex="1" parent="1">
+          <mxGeometry x="350" y="800" width="180" height="120" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
