@@ -154,4 +154,116 @@ suite('Linear Regression Tests', () => {
 
 		console.log('✓ Dummy variable regression test passed');
 	});
+
+	test('Slope equation validation', async () => {
+		// Get the test data file path
+		const testDataPath = path.join(__dirname, '../../test_data.csv');
+
+		// Run regression: Score (Y) = f(Hours (X))
+		const results = await performLinearRegression(testDataPath, ['Hours'], 'Score');
+
+		console.log('Slope Equation Validation:');
+		console.log('  Intercept:', results.intercept);
+		console.log('  Slope:', results.slopes['Hours']);
+		console.log('  Expected equation: Y = ' + results.intercept.toFixed(4) + ' + ' + results.slopes['Hours'].toFixed(4) + ' * X');
+
+		// Data points: (2,65), (3,75), (4,85), (5,95), (6,105), (7,115), (8,125), (1,50), (9,130), (10,140)
+		const xValues = [2, 3, 4, 5, 6, 7, 8, 1, 9, 10];
+		const yValues = [65, 75, 85, 95, 105, 115, 125, 50, 130, 140];
+
+		const intercept = results.intercept;
+		const slope = results.slopes['Hours'];
+
+		console.log('Validating each prediction against equation: Y = ' + intercept.toFixed(4) + ' + ' + slope.toFixed(4) + ' * X');
+
+		// Validate each prediction matches the equation: Y = intercept + slope * X
+		for (let i = 0; i < xValues.length; i++) {
+			const x = xValues[i];
+			const actualY = yValues[i];
+			const predictedY = results.predictions[i];
+			const calculatedY = intercept + slope * x;
+
+			console.log(`  Point ${i + 1}: X=${x}, Actual Y=${actualY}, Predicted Y=${predictedY.toFixed(4)}, Calculated Y=${calculatedY.toFixed(4)}`);
+
+			// Validate predicted Y matches the equation calculation
+			assert.ok(Math.abs(predictedY - calculatedY) < 1e-10,
+				`Prediction mismatch for point ${i + 1}: predicted ${predictedY} but equation gives ${calculatedY}`);
+
+			// Validate the equation produces consistent predictions
+			assert.ok(Math.abs(predictedY - (intercept + slope * x)) < 1e-10,
+				`Equation Y = ${intercept} + ${slope} * ${x} should equal ${predictedY}`);
+		}
+
+		console.log('✓ Slope equation validation passed - all predictions match the equation');
+	});
+
+	test('Multivariate slope equation validation', async () => {
+		// Get the test data file path
+		const testDataPath = path.join(__dirname, '../../test_data.csv');
+
+		// Create dummy variables for Category column
+		const dummyVariables = {
+			Category: {
+				A: [], // reference category
+				B: [0, 1, 0, 1, 0, 1, 0, 1, 0, 1] // 1 where Category=B, 0 otherwise
+			}
+		};
+
+		// Run regression: Score (Y) = f(Hours (X), Category_B (dummy))
+		const results = await performLinearRegression(
+			testDataPath,
+			['Hours', 'Category_B'],
+			'Score',
+			dummyVariables
+		);
+
+		console.log('Multivariate Slope Equation Validation:');
+		console.log('  Intercept:', results.intercept);
+		console.log('  Slope (Hours):', results.slopes['Hours']);
+		console.log('  Slope (Category_B):', results.slopes['Category_B']);
+		console.log('  Expected equation: Y = ' + results.intercept.toFixed(4) + ' + ' + results.slopes['Hours'].toFixed(4) + ' * Hours + ' + results.slopes['Category_B'].toFixed(4) + ' * Category_B');
+
+		// Data from test_data.csv:
+		// Hours,Score,Category
+		// 2,65,A      -> Hours=2, Category_B=0
+		// 3,75,B      -> Hours=3, Category_B=1
+		// 4,85,A      -> Hours=4, Category_B=0
+		// 5,95,B      -> Hours=5, Category_B=1
+		// 6,105,A     -> Hours=6, Category_B=0
+		// 7,115,B     -> Hours=7, Category_B=1
+		// 8,125,A     -> Hours=8, Category_B=0
+		// 1,50,B      -> Hours=1, Category_B=1
+		// 9,130,A     -> Hours=9, Category_B=0
+		// 10,140,B    -> Hours=10, Category_B=1
+		const hoursValues = [2, 3, 4, 5, 6, 7, 8, 1, 9, 10];
+		const categoryBValues = [0, 1, 0, 1, 0, 1, 0, 1, 0, 1];
+		const yValues = [65, 75, 85, 95, 105, 115, 125, 50, 130, 140];
+
+		const intercept = results.intercept;
+		const slopeHours = results.slopes['Hours'];
+		const slopeCategory = results.slopes['Category_B'];
+
+		console.log('Validating each prediction against multivariate equation');
+
+		// Validate each prediction matches: Y = intercept + slope_hours * hours + slope_category * category_b
+		for (let i = 0; i < hoursValues.length; i++) {
+			const hours = hoursValues[i];
+			const categoryB = categoryBValues[i];
+			const actualY = yValues[i];
+			const predictedY = results.predictions[i];
+			const calculatedY = intercept + slopeHours * hours + slopeCategory * categoryB;
+
+			console.log(`  Point ${i + 1}: Hours=${hours}, Category_B=${categoryB}, Actual Y=${actualY}, Predicted Y=${predictedY.toFixed(4)}, Calculated Y=${calculatedY.toFixed(4)}`);
+
+			// Validate predicted Y matches the equation calculation
+			assert.ok(Math.abs(predictedY - calculatedY) < 1e-10,
+				`Multivariate prediction mismatch for point ${i + 1}: predicted ${predictedY} but equation gives ${calculatedY}`);
+
+			// Validate the equation produces consistent predictions
+			assert.ok(Math.abs(predictedY - (intercept + slopeHours * hours + slopeCategory * categoryB)) < 1e-10,
+				`Equation Y = ${intercept} + ${slopeHours} * ${hours} + ${slopeCategory} * ${categoryB} should equal ${predictedY}`);
+		}
+
+		console.log('✓ Multivariate slope equation validation passed - all predictions match the equation');
+	});
 });
