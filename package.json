@@ -82,6 +82,10 @@
         "title": "❌ Remove Dummy Column"
       },
       {
+        "command": "db-extension.setDummyVariableBaseCase",
+        "title": "⭐ Set as Base Case"
+      },
+      {
         "command": "db-extension.clearCsvFile",
         "title": "🗑️ Clear CSV File",
         "icon": "$(trash)"
@@ -148,6 +152,11 @@
         },
         {
           "command": "db-extension.removeDummyColumn",
+          "when": "view == modelConfig && viewItem == dummy-item",
+          "group": "inline"
+        },
+        {
+          "command": "db-extension.setDummyVariableBaseCase",
           "when": "view == modelConfig && viewItem == dummy-item",
           "group": "inline"
         }

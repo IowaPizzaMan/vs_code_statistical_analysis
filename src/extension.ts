@@ -91,7 +91,19 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showInformationMessage(`Removed dummy column: ${columnName}`);
 		})
 	);
-}
 
-// This method is called when your extension is deactivated
-export function deactivate() { }
+	context.subscriptions.push(
+		vscode.commands.registerCommand('db-extension.setDummyVariableBaseCase', async (item: any) => {
+			const columnName = item.columnName || item.label;
+			const selection = await vscode.window.showQuickPick(['Yes', 'No'], {
+				placeHolder: `Set "${columnName}" as the base case?`,
+				canPickMany: false
+			});
+
+			if (selection === 'Yes') {
+				modelConfigProvider.setBaseCaseDummy(columnName);
+				vscode.window.showInformationMessage(`"${columnName}" is now the base case`);
+			}
+		})
+	);
+}
