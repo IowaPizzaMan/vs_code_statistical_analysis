@@ -83,18 +83,6 @@ export function registerLinearRegression(
                         vscode.window.showErrorMessage('Error creating dummy variables: ' + String(err));
                     }
                 }
-
-                // Check if we have X and Y columns
-                if (provider.getSelectedXColumns().length > 0 && provider.getSelectedYColumn()) {
-                    const autoRun = await vscode.window.showQuickPick(['Yes', 'No'], {
-                        placeHolder: 'Ready to run regression?',
-                        canPickMany: false
-                    });
-
-                    if (autoRun === 'Yes') {
-                        await runRegressionLogic(provider, extensionUri, historyService, modelConfigProvider, historyProvider);
-                    }
-                }
             }
         )
     );
@@ -139,6 +127,54 @@ export function registerLinearRegression(
             }
 
             vscode.window.showInformationMessage('Model restored from history!');
+        })
+    );
+
+    // Command to clear CSV file selection (clears all sections)
+    disposables.push(
+        vscode.commands.registerCommand('db-extension.clearCsvFile', async () => {
+            provider.clearSelectedFile();
+            provider.clearSelectedXColumns();
+            provider.setSelectedYColumn(null);
+            provider.clearDummyVariables();
+            modelConfigProvider.setXColumns([]);
+            modelConfigProvider.setYColumn(null);
+            modelConfigProvider.setDummyColumns([]);
+            vscode.window.showInformationMessage('Cleared CSV file and all configuration.');
+            provider.refresh();
+        })
+    );
+
+    // Command to clear X columns only
+    disposables.push(
+        vscode.commands.registerCommand('db-extension.clearXColumns', async () => {
+            provider.clearSelectedXColumns();
+            modelConfigProvider.setXColumns([]);
+            modelConfigProvider.setDummyColumns([]);
+            vscode.window.showInformationMessage('Cleared X columns.');
+            provider.refresh();
+        })
+    );
+
+    // Command to clear Y column only
+    disposables.push(
+        vscode.commands.registerCommand('db-extension.clearYColumn', async () => {
+            provider.setSelectedYColumn(null);
+            modelConfigProvider.setYColumn(null);
+            vscode.window.showInformationMessage('Cleared Y column.');
+            provider.refresh();
+        })
+    );
+
+    // Command to clear dummy variables only
+    disposables.push(
+        vscode.commands.registerCommand('db-extension.clearDummyVariables', async () => {
+            provider.clearDummyVariables();
+            provider.clearSelectedXColumns();
+            modelConfigProvider.setXColumns([]);
+            modelConfigProvider.setDummyColumns([]);
+            vscode.window.showInformationMessage('Cleared dummy variables.');
+            provider.refresh();
         })
     );
 

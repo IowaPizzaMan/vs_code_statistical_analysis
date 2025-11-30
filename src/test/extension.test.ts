@@ -53,38 +53,38 @@ suite('Linear Regression Tests', () => {
 		// Data points: (2,65), (3,75), (4,85), (5,95), (6,105), (7,115), (8,125), (1,50), (9,130), (10,140)
 		// Y values: [65, 75, 85, 95, 105, 115, 125, 50, 130, 140]
 		// X values: [2, 3, 4, 5, 6, 7, 8, 1, 9, 10]
-		
+
 		const yValues = [65, 75, 85, 95, 105, 115, 125, 50, 130, 140];
 		const xValues = [2, 3, 4, 5, 6, 7, 8, 1, 9, 10];
-		
+
 		// Calculate expected Y mean
 		const yMean = yValues.reduce((a, b) => a + b, 0) / yValues.length;
 		console.log('Y mean:', yMean);
-		
+
 		// Calculate expected SS Total
 		const ssTotal = yValues.reduce((sum, y) => sum + Math.pow(y - yMean, 2), 0);
 		console.log('SS Total:', ssTotal);
-		
+
 		// Calculate expected SS Residual
 		const ssResidual = yValues.reduce((sum, y, idx) => sum + Math.pow(y - results.predictions[idx], 2), 0);
 		console.log('SS Residual:', ssResidual);
-		
+
 		// Calculate expected R²
 		const expectedRSquared = 1 - (ssResidual / ssTotal);
 		console.log('Expected R²:', expectedRSquared);
-		
+
 		// Calculate expected Adjusted R²
 		const n = yValues.length;
 		const p = results.xColumns.length;
 		const expectedAdjustedRSquared = 1 - (1 - expectedRSquared) * ((n - 1) / (n - p - 1));
 		console.log('Expected Adjusted R²:', expectedAdjustedRSquared);
-		
+
 		// Validate R² matches expected value (with small tolerance for floating point)
-		assert.ok(Math.abs(results.rSquared - expectedRSquared) < 0.0001, 
+		assert.ok(Math.abs(results.rSquared - expectedRSquared) < 0.0001,
 			`R² mismatch: expected ${expectedRSquared}, got ${results.rSquared}`);
-		
+
 		// Validate Adjusted R² matches expected value
-		assert.ok(Math.abs(results.adjustedRSquared - expectedAdjustedRSquared) < 0.0001, 
+		assert.ok(Math.abs(results.adjustedRSquared - expectedAdjustedRSquared) < 0.0001,
 			`Adjusted R² mismatch: expected ${expectedAdjustedRSquared}, got ${results.adjustedRSquared}`);
 
 		console.log('✓ Simple linear regression test passed');

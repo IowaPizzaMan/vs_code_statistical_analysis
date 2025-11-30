@@ -56,7 +56,7 @@ function multipleLinearRegression(X: number[][], y: number[]): { intercept: numb
 // Gaussian elimination for solving Ax = b
 function gaussianElimination(A: number[][], b: number[]): number[] {
     const n = A.length;
-    
+
     // Forward elimination
     for (let i = 0; i < n; i++) {
         // Find pivot
@@ -246,7 +246,7 @@ export async function performLinearRegression(
 
                 // Calculate multivariate regression using matrix algebra
                 const regression = multipleLinearRegression(regressionData, yValues);
-                
+
                 console.log('Regression result:', {
                     intercept: regression.intercept,
                     slopes: regression.slopes

@@ -133,6 +133,7 @@ export class LinearRegressionProvider implements vscode.TreeDataProvider<LinearR
         return this.selectedYColumn;
     }
 
+
     addSelectedXColumn(column: string): void {
         if (!this.selectedXColumns.includes(column)) {
             this.selectedXColumns.push(column);
@@ -147,6 +148,11 @@ export class LinearRegressionProvider implements vscode.TreeDataProvider<LinearR
         this.selectedXColumns = [];
     }
 
+    clearSelectedFile(): void {
+        this.selectedFile = null;
+        this.columns = [];
+    }
+
     setSelectedYColumn(column: string | null): void {
         this.selectedYColumn = column;
     }
@@ -157,6 +163,10 @@ export class LinearRegressionProvider implements vscode.TreeDataProvider<LinearR
 
     setDummyVariables(column: string, dummies: { [key: string]: number[] }): void {
         this.dummyVariables.set(column, dummies);
+    }
+
+    clearDummyVariables(): void {
+        this.dummyVariables.clear();
     }
 }
 
@@ -172,3 +182,4 @@ export class LinearRegressionItem extends vscode.TreeItem {
         this.tooltip = label;
     }
 }
+

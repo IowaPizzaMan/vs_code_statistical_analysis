@@ -80,6 +80,26 @@
       {
         "command": "db-extension.removeDummyColumn",
         "title": "❌ Remove Dummy Column"
+      },
+      {
+        "command": "db-extension.clearCsvFile",
+        "title": "🗑️ Clear CSV File",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "db-extension.clearXColumns",
+        "title": "🗑️ Clear X Columns",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "db-extension.clearYColumn",
+        "title": "🗑️ Clear Y Column",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "db-extension.clearDummyVariables",
+        "title": "🗑️ Clear Dummy Variables",
+        "icon": "$(trash)"
       }
     ],
     "menus": {
@@ -87,6 +107,26 @@
         {
           "command": "db-extension.runLinearRegression",
           "when": "view == csvFileExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "db-extension.clearCsvFile",
+          "when": "view == csvFileExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "db-extension.clearXColumns",
+          "when": "view == modelConfig",
+          "group": "navigation"
+        },
+        {
+          "command": "db-extension.clearYColumn",
+          "when": "view == modelConfig",
+          "group": "navigation"
+        },
+        {
+          "command": "db-extension.clearDummyVariables",
+          "when": "view == modelConfig",
           "group": "navigation"
         }
       ],
