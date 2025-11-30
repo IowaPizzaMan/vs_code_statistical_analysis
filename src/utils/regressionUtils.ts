@@ -115,12 +115,13 @@ export async function performLinearRegression(
             }
 
             try {
-                const lines = data.split('\n').filter(line => line.trim());
-                if (lines.length < 2) {
+                const { parseCSV } = require('./csvUtils');
+                const rows: string[][] = parseCSV(data);
+                if (rows.length < 2) {
                     throw new Error('CSV file must have at least 2 rows (header + data)');
                 }
 
-                const headers = lines[0].split(',').map(h => h.trim());
+                const headers = rows[0].map(h => h.trim());
                 const yIndex = headers.indexOf(yColumn);
 
                 if (yIndex === -1) {
@@ -173,8 +174,8 @@ export async function performLinearRegression(
                 const regressionData: number[][] = [];
                 const yValues: number[] = [];
 
-                for (let i = 1; i < lines.length; i++) {
-                    const values = lines[i].split(',').map(v => v.trim());
+                for (let i = 1; i < rows.length; i++) {
+                    const values = rows[i].map(v => v.trim());
 
                     // Parse Y value
                     const yVal = parseFloat(values[yIndex]);

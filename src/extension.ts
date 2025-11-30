@@ -83,12 +83,53 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('db-extension.removeDummyColumn', (item: any) => {
+		vscode.commands.registerCommand('db-extension.removeDummyColumn', async (item: any) => {
 			const columnName = item.columnName || item.label;
 			// Remove from selected X columns
 			linearRegressionProvider.removeSelectedXColumn(columnName);
 			modelConfigProvider.removeDummyColumn(columnName);
 			vscode.window.showInformationMessage(`Removed dummy column: ${columnName}`);
+
+			// Refresh decorations in the active CSV editor to reflect removal
+			try {
+				await vscode.commands.executeCommand('db-extension.refreshCsvEditorDecorations');
+			} catch (e) {
+				// ignore
+			}
+		})
+	);
+
+	// Command to open a column from the Model Config view
+	context.subscriptions.push(
+		vscode.commands.registerCommand('db-extension.openColumnFromModelConfig', async (columnName: string) => {
+			const file = linearRegressionProvider.getSelectedFile();
+			if (!file) {
+				vscode.window.showErrorMessage('No CSV selected. Select a CSV in the CSV explorer first.');
+				return;
+			}
+			// Reuse existing selectColumn flow to open and reveal
+			await vscode.commands.executeCommand('db-extension.selectColumn', file, columnName);
+		})
+	);
+
+	// Command to show preview panel (registered here so it's available globally)
+	context.subscriptions.push(
+		vscode.commands.registerCommand('db-extension.showCsvPreview', async () => {
+			const file = linearRegressionProvider.getSelectedFile();
+			if (!file) {
+				vscode.window.showErrorMessage('No CSV selected.');
+				return;
+			}
+			const CsvPreviewPanel = require('./providers/csvPreviewPanel').CsvPreviewPanel;
+			CsvPreviewPanel.createOrShow(context.extensionUri, file, linearRegressionProvider);
+		})
+	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('db-extension.refreshCsvPreview', async () => {
+			const file = linearRegressionProvider.getSelectedFile();
+			const CsvPreviewPanel = require('./providers/csvPreviewPanel').CsvPreviewPanel;
+			CsvPreviewPanel.refresh(file, linearRegressionProvider);
 		})
 	);
 

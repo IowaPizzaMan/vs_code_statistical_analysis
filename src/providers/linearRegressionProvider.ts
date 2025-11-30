@@ -106,13 +106,14 @@ export class LinearRegressionProvider implements vscode.TreeDataProvider<LinearR
                     reject(err);
                     return;
                 }
-                const lines = data.split('\n');
-                if (lines.length === 0) {
-                    reject(new Error('Empty CSV file'));
-                    return;
+                try {
+                    // use csvUtils to properly parse quoted headers
+                    const { getHeadersFromCSV } = require('../utils/csvUtils');
+                    const headers: string[] = getHeadersFromCSV(data);
+                    resolve(headers);
+                } catch (e) {
+                    reject(e);
                 }
-                const headers = lines[0].split(',').map(h => h.trim());
-                resolve(headers);
             });
         });
     }
