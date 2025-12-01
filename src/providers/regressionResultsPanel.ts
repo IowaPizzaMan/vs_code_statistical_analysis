@@ -47,7 +47,7 @@ export class RegressionResultsPanel {
     console.log('  - xColumns:', results.xColumns);
     console.log('  - predictions length:', results.predictions?.length);
 
-    const { slopes, intercept, rSquared, adjustedRSquared, predictions, xColumns: allXCols } = results;
+    const { slopes, intercept, rSquared, adjustedRSquared, multipleR, standardError, predictions, xColumns: allXCols } = results;
 
     // Helper function to format numbers with proper precision
     const formatNumber = (num: number, decimals: number = 6): string => {
@@ -191,14 +191,77 @@ export class RegressionResultsPanel {
         </div>
 
         <div class="results-section">
+          <h2 style="margin-top: 0; margin-bottom: 15px; color: #4ec9b0;">Model Details</h2>
+          <table style="width: 100%; border-collapse: collapse; color: #e0e0e0;">
+            <thead>
+              <tr style="background-color: #2d2d30; border-bottom: 2px solid #4ec9b0;">
+                <th style="text-align: left; padding: 10px; color: #4ec9b0;">Variable</th>
+                <th style="text-align: right; padding: 10px; color: #4ec9b0;">Coefficient</th>
+                <th style="text-align: right; padding: 10px; color: #4ec9b0;">Std. Error</th>
+                <th style="text-align: right; padding: 10px; color: #4ec9b0;">t-Stat</th>
+                <th style="text-align: right; padding: 10px; color: #4ec9b0;">P-value</th>
+                <th style="text-align: right; padding: 10px; color: #4ec9b0;">Lower 95%</th>
+                <th style="text-align: right; padding: 10px; color: #4ec9b0;">Upper 95%</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${results.coefficientStats
+        ? Object.entries(results.coefficientStats)
+          .map(
+            ([varName, s]: [string, any]) => `
+                <tr style="border-bottom: 1px solid #3e3e42;">
+                  <td style="padding: 8px; font-weight: bold; color: #9cdcfe;">${varName}</td>
+                  <td style="padding: 8px; text-align: right; color: #ce9178;">${formatNumber(
+              s.coefficient,
+              6
+            )}</td>
+                  <td style="padding: 8px; text-align: right; color: #ce9178;">${formatNumber(
+              s.standardError,
+              6
+            )}</td>
+                  <td style="padding: 8px; text-align: right; color: #ce9178;">${formatNumber(
+              s.tStat,
+              6
+            )}</td>
+                  <td style="padding: 8px; text-align: right; color: #ce9178;">${formatNumber(
+              s.pValue,
+              6
+            )}</td>
+                  <td style="padding: 8px; text-align: right; color: #ce9178;">${formatNumber(
+              s.ci95Lower,
+              6
+            )}</td>
+                  <td style="padding: 8px; text-align: right; color: #ce9178;">${formatNumber(
+              s.ci95Upper,
+              6
+            )}</td>
+                </tr>
+              `
+          )
+          .join('')
+        : '<tr><td colspan="7" style="padding: 8px; color: #999;">Coefficient statistics not available</td></tr>'
+      }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="results-section">
           <h2 style="margin-top: 0; margin-bottom: 15px; color: #4ec9b0;">Model Statistics</h2>
           <div class="metric">
             <span class="metric-label">R² (Coefficient of Determination):</span>
             <span class="metric-value">${(rSquared !== undefined ? formatNumber(rSquared, 6) : 'N/A')}</span>
           </div>
           <div class="metric">
+            <span class="metric-label">Multiple R:</span>
+            <span class="metric-value">${(multipleR !== undefined ? formatNumber(multipleR, 6) : 'N/A')}</span>
+          </div>
+          <div class="metric">
             <span class="metric-label">Adjusted R²:</span>
             <span class="metric-value">${(adjustedRSquared !== undefined ? formatNumber(adjustedRSquared, 6) : 'N/A')}</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Standard Error:</span>
+            <span class="metric-value">${(standardError !== undefined ? formatNumber(standardError, 6) : 'N/A')}</span>
           </div>
           <div class="metric">
             <span class="metric-label">Data Points:</span>
@@ -208,9 +271,7 @@ export class RegressionResultsPanel {
             <span class="metric-label">Predictors:</span>
             <span class="metric-value">${allXCols.length}</span>
           </div>
-        </div>
-
-        <div class="results-section">
+        </div>        <div class="results-section">
           <h2 style="margin-top: 0; color: #4ec9b0;">Interpretation</h2>
           <p>
             The model explains <strong>${(rSquared !== undefined ? (rSquared * 100).toFixed(4) : 'N/A')}%</strong> of the variance in <strong>${yColumn}</strong>.

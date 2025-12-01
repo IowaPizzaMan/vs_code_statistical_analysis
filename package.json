@@ -104,8 +104,7 @@
         "command": "db-extension.clearDummyVariables",
         "title": "🗑️ Clear Dummy Variables",
         "icon": "$(trash)"
-      }
-      ,
+      },
       {
         "command": "db-extension.openColumnFromModelConfig",
         "title": "Open Column in CSV"
@@ -172,8 +171,7 @@
           "command": "db-extension.setDummyVariableBaseCase",
           "when": "view == modelConfig && viewItem == dummy-item",
           "group": "inline"
-        }
-        ,
+        },
         {
           "command": "db-extension.openColumnFromModelConfig",
           "when": "view == modelConfig && (viewItem == xcol-item || viewItem == ycol-item || viewItem == dummy-item)",

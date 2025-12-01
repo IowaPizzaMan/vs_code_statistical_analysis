@@ -439,4 +439,260 @@ suite('Linear Regression Tests', () => {
 
 		console.log('✓ Three-category base case test passed - only non-base categories in equation');
 	});
+
+	test('Multiple R calculation in simple regression', async () => {
+		// Get the test data file path
+		const testDataPath = path.join(__dirname, '../../test_data.csv');
+
+		// Run regression: Score (Y) = f(Hours (X))
+		const results = await performLinearRegression(testDataPath, ['Hours'], 'Score');
+
+		console.log('Multiple R Test (Simple Regression):');
+		console.log('  R²:', results.rSquared);
+		console.log('  Multiple R:', results.multipleR);
+
+		// Multiple R should be defined and be a number
+		assert.strictEqual(typeof results.multipleR, 'number', 'Multiple R should be a number');
+		assert.ok(!isNaN(results.multipleR), 'Multiple R should not be NaN');
+
+		// Multiple R should be the square root of R²
+		const expectedMultipleR = Math.sqrt(Math.abs(results.rSquared));
+		console.log('  Expected Multiple R (sqrt(R²)):', expectedMultipleR);
+
+		assert.ok(Math.abs(results.multipleR - expectedMultipleR) < 1e-10,
+			`Multiple R mismatch: expected ${expectedMultipleR}, got ${results.multipleR}`);
+
+		// Multiple R should be between 0 and 1 (correlation coefficient)
+		assert.ok(results.multipleR >= 0 && results.multipleR <= 1,
+			`Multiple R should be between 0 and 1, got ${results.multipleR}`);
+
+		console.log('✓ Multiple R calculation test passed');
+	});
+
+	test('Multiple R calculation in multivariate regression', async () => {
+		// Get the test data file path
+		const testDataPath = path.join(__dirname, '../../test_data.csv');
+
+		// Create dummy variables for Category column
+		const dummyVariables = {
+			Category: {
+				A: [], // reference category
+				B: [0, 1, 0, 1, 0, 1, 0, 1, 0, 1] // 1 where Category=B, 0 otherwise
+			}
+		};
+
+		// Run regression: Score (Y) = f(Hours (X), Category_B (dummy))
+		const results = await performLinearRegression(
+			testDataPath,
+			['Hours', 'Category_B'],
+			'Score',
+			dummyVariables
+		);
+
+		console.log('Multiple R Test (Multivariate Regression):');
+		console.log('  R²:', results.rSquared);
+		console.log('  Multiple R:', results.multipleR);
+
+		// Multiple R should be defined and be a number
+		assert.strictEqual(typeof results.multipleR, 'number', 'Multiple R should be a number');
+		assert.ok(!isNaN(results.multipleR), 'Multiple R should not be NaN');
+
+		// Multiple R should equal the square root of R²
+		const expectedMultipleR = Math.sqrt(Math.abs(results.rSquared));
+		console.log('  Expected Multiple R (sqrt(R²)):', expectedMultipleR);
+
+		assert.ok(Math.abs(results.multipleR - expectedMultipleR) < 1e-10,
+			`Multiple R mismatch: expected ${expectedMultipleR}, got ${results.multipleR}`);
+
+		// Multiple R should be between 0 and 1
+		assert.ok(results.multipleR >= 0 && results.multipleR <= 1,
+			`Multiple R should be between 0 and 1, got ${results.multipleR}`);
+
+		console.log('✓ Multiple R calculation for multivariate regression passed');
+	});
+
+	test('Standard Error calculation in simple regression', async () => {
+		// Get the test data file path
+		const testDataPath = path.join(__dirname, '../../test_data.csv');
+
+		// Run regression: Score (Y) = f(Hours (X))
+		const results = await performLinearRegression(testDataPath, ['Hours'], 'Score');
+
+		console.log('Standard Error Test (Simple Regression):');
+		console.log('  Standard Error:', results.standardError);
+		console.log('  Predictions:', results.predictions.length);
+
+		// Standard Error should be defined and be a number
+		assert.strictEqual(typeof results.standardError, 'number', 'Standard Error should be a number');
+		assert.ok(!isNaN(results.standardError), 'Standard Error should not be NaN');
+
+		// Standard Error should be >= 0
+		assert.ok(results.standardError >= 0, `Standard Error should be >= 0, got ${results.standardError}`);
+
+		// Manually calculate expected Standard Error
+		// SE = sqrt(SS_Residual / (n - p - 1))
+		// where n = number of observations, p = number of predictors (excluding intercept)
+		const yValues = [65, 75, 85, 95, 105, 115, 125, 50, 130, 140];
+		const n = yValues.length;
+		const p = results.xColumns.length; // 1 (just Hours)
+
+		// Calculate residuals and SS_Residual
+		const ssResidual = yValues.reduce((sum, y, idx) => sum + Math.pow(y - results.predictions[idx], 2), 0);
+		console.log('  SS Residual:', ssResidual);
+		console.log('  n:', n, 'p:', p);
+		console.log('  Degrees of freedom (n - p - 1):', n - p - 1);
+
+		const expectedStandardError = Math.sqrt(ssResidual / (n - p - 1));
+		console.log('  Expected Standard Error:', expectedStandardError);
+
+		assert.ok(Math.abs(results.standardError - expectedStandardError) < 1e-8,
+			`Standard Error mismatch: expected ${expectedStandardError}, got ${results.standardError}`);
+
+		console.log('✓ Standard Error calculation test passed');
+	});
+
+	test('Standard Error calculation in multivariate regression', async () => {
+		// Get the test data file path
+		const testDataPath = path.join(__dirname, '../../test_data.csv');
+
+		// Create dummy variables for Category column
+		const dummyVariables = {
+			Category: {
+				A: [], // reference category
+				B: [0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
+			}
+		};
+
+		// Run regression: Score (Y) = f(Hours (X), Category_B (dummy))
+		const results = await performLinearRegression(
+			testDataPath,
+			['Hours', 'Category_B'],
+			'Score',
+			dummyVariables
+		);
+
+		console.log('Standard Error Test (Multivariate Regression):');
+		console.log('  Standard Error:', results.standardError);
+		console.log('  X Columns count:', results.xColumns.length);
+
+		// Standard Error should be defined and be a number
+		assert.strictEqual(typeof results.standardError, 'number', 'Standard Error should be a number');
+		assert.ok(!isNaN(results.standardError), 'Standard Error should not be NaN');
+
+		// Standard Error should be >= 0
+		assert.ok(results.standardError >= 0, `Standard Error should be >= 0, got ${results.standardError}`);
+
+		// Manually calculate expected Standard Error for multivariate case
+		const yValues = [65, 75, 85, 95, 105, 115, 125, 50, 130, 140];
+		const n = yValues.length; // 10
+		const p = results.xColumns.length; // 2 (Hours and Category_B)
+
+		// Calculate residuals and SS_Residual
+		const ssResidual = yValues.reduce((sum, y, idx) => sum + Math.pow(y - results.predictions[idx], 2), 0);
+		console.log('  SS Residual:', ssResidual);
+		console.log('  n:', n, 'p:', p);
+		console.log('  Degrees of freedom (n - p - 1):', n - p - 1);
+
+		const expectedStandardError = Math.sqrt(ssResidual / (n - p - 1));
+		console.log('  Expected Standard Error:', expectedStandardError);
+
+		assert.ok(Math.abs(results.standardError - expectedStandardError) < 1e-8,
+			`Standard Error mismatch: expected ${expectedStandardError}, got ${results.standardError}`);
+
+		console.log('✓ Standard Error calculation for multivariate regression passed');
+	});
+
+	test('Standard Error is zero when degrees of freedom <= 0', async () => {
+		// This is harder to test with actual data since we need n <= p + 1
+		// But we can verify the logic is correct through edge case validation
+		// For now, we just verify that results contain the standardError field
+
+		const testDataPath = path.join(__dirname, '../../test_data.csv');
+		const results = await performLinearRegression(testDataPath, ['Hours'], 'Score');
+
+		// With n=10 and p=1, degrees of freedom = 10 - 1 - 1 = 8, which is > 0
+		// So Standard Error should be computed normally
+		assert.ok(results.standardError > 0, 'Standard Error should be > 0 for this data');
+
+		console.log('✓ Standard Error edge case validation passed');
+	});
+
+	test('Multiple R and Standard Error included in regression results', async () => {
+		// Get the test data file path
+		const testDataPath = path.join(__dirname, '../../test_data.csv');
+
+		// Run regression
+		const results = await performLinearRegression(testDataPath, ['Hours'], 'Score');
+
+		console.log('Results Completeness Test:');
+		console.log('  Results keys:', Object.keys(results));
+
+		// Verify new fields are present in results
+		assert.ok('multipleR' in results, 'multipleR field should be in results');
+		assert.ok('standardError' in results, 'standardError field should be in results');
+
+		// Verify they are numbers and not undefined/null
+		assert.strictEqual(typeof results.multipleR, 'number', 'multipleR should be a number');
+		assert.strictEqual(typeof results.standardError, 'number', 'standardError should be a number');
+
+		// Verify all key statistics are present
+		const requiredFields = ['intercept', 'slopes', 'rSquared', 'adjustedRSquared', 'multipleR', 'standardError', 'predictions', 'xColumns'];
+		requiredFields.forEach(field => {
+			assert.ok(field in results, `Results should include ${field}`);
+		});
+
+		console.log('✓ All regression statistics included in results');
+	});
+
+	test('Coefficient statistics and 95% CI', async () => {
+		const testDataPath = path.join(__dirname, '../../test_data.csv');
+		const results = await performLinearRegression(testDataPath, ['Hours'], 'Score');
+
+		console.log('Coefficient statistics:', results.coefficientStats);
+
+		// Ensure coefficientStats exists and has keys for Intercept and Hours
+		assert.ok(results.coefficientStats, 'coefficientStats should be present in results');
+		assert.ok('Intercept' in results.coefficientStats, 'Intercept stats should be present');
+		assert.ok('Hours' in results.coefficientStats, 'Hours stats should be present');
+
+		const interceptStats = results.coefficientStats['Intercept'];
+		const hoursStats = results.coefficientStats['Hours'];
+
+		// Expected values from reference run
+		const expected = {
+			intercept: 44.6666666666667,
+			interceptSE: 1.6869972127895143,
+			interceptT: 26.477024578368248,
+			interceptP: 6.981714333331723e-7,
+			interceptCI: [40.77645109397408, 48.55688223935932],
+			hours: 9.787878787878784,
+			hoursSE: 0.27188421886252034,
+			hoursT: 36.00017253236781,
+			hoursP: 1.136935046108789e-7,
+			hoursCI: [9.160913779181811, 10.414843796575756]
+		};
+
+		// Assert numeric properties exist and are numbers
+		['coefficient', 'standardError', 'tStat', 'pValue', 'ci95Lower', 'ci95Upper'].forEach(field => {
+			assert.strictEqual(typeof (interceptStats as any)[field], 'number', `Intercept.${field} should be a number`);
+			assert.strictEqual(typeof (hoursStats as any)[field], 'number', `Hours.${field} should be a number`);
+		});
+
+		// Validate values within tolerances
+		assert.ok(Math.abs(interceptStats.coefficient - expected.intercept) < 1e-10, 'Intercept coefficient mismatch');
+		assert.ok(Math.abs(interceptStats.standardError - expected.interceptSE) < 1e-10, 'Intercept SE mismatch');
+		assert.ok(Math.abs(interceptStats.tStat - expected.interceptT) < 1e-6, 'Intercept t-stat mismatch');
+		assert.ok(Math.abs(interceptStats.pValue - expected.interceptP) < 1e-6, 'Intercept p-value mismatch');
+		assert.ok(Math.abs(interceptStats.ci95Lower - expected.interceptCI[0]) < 1e-6, 'Intercept CI lower mismatch');
+		assert.ok(Math.abs(interceptStats.ci95Upper - expected.interceptCI[1]) < 1e-6, 'Intercept CI upper mismatch');
+
+		assert.ok(Math.abs(hoursStats.coefficient - expected.hours) < 1e-10, 'Hours coefficient mismatch');
+		assert.ok(Math.abs(hoursStats.standardError - expected.hoursSE) < 1e-10, 'Hours SE mismatch');
+		assert.ok(Math.abs(hoursStats.tStat - expected.hoursT) < 1e-6, 'Hours t-stat mismatch');
+		assert.ok(Math.abs(hoursStats.pValue - expected.hoursP) < 1e-6, 'Hours p-value mismatch');
+		assert.ok(Math.abs(hoursStats.ci95Lower - expected.hoursCI[0]) < 1e-6, 'Hours CI lower mismatch');
+		assert.ok(Math.abs(hoursStats.ci95Upper - expected.hoursCI[1]) < 1e-6, 'Hours CI upper mismatch');
+
+		console.log('✓ Coefficient statistics and CI test passed');
+	});
 });

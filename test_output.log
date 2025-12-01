@@ -1,0 +1,820 @@
+
+> db-extension@0.0.1 pretest
+> npm run compile-tests && npm run compile && npm run lint
+
+
+> db-extension@0.0.1 compile-tests
+> tsc -p . --outDir out
+
+
+> db-extension@0.0.1 compile
+> webpack
+
+    [webpack-cli] Compiler starting... 
+    [webpack-cli] Compiler is using config: 'C:\Users\nealc\git\db-extension\webpack.config.js'
+    [webpack-cli] Compiler finished
+asset [1m[32mextension.js[39m[22m 234 KiB [1m[33m[compared for emit][39m[22m (name: main) 1 related asset
+modules by path [1m./src/[39m[22m 87.3 KiB
+  modules by path [1m./src/providers/*.ts[39m[22m 34.6 KiB 5 modules
+  modules by path [1m./src/commands/*.ts[39m[22m 22.3 KiB
+    [1m./src/commands/helloWorld.ts[39m[22m 1.69 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+    + 2 modules
+  modules by path [1m./src/utils/*.ts[39m[22m 21.4 KiB
+    [1m./src/utils/regressionUtils.ts[39m[22m 14.2 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+    [1m./src/utils/csvUtils.ts[39m[22m 1.83 KiB [1m[33m[optional][39m[22m [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+    [1m./src/utils/dummyVariableUtils.ts[39m[22m 5.35 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+  [1m./src/extension.ts[39m[22m 7.79 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+  [1m./src/services/regressionHistoryService.ts[39m[22m 1.26 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+[1mexternal "vscode"[39m[22m 42 bytes [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+[1mexternal "fs"[39m[22m 42 bytes [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+[1mexternal "path"[39m[22m 42 bytes [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+[1m./node_modules/simple-statistics/dist/simple-statistics.js[39m[22m 144 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.103.0 compiled [1m[32msuccessfully[39m[22m in 1859 ms
+
+> db-extension@0.0.1 lint
+> eslint src
+
+
+C:\Users\nealc\git\db-extension\src\commands\linearRegression.ts
+   79:44  warning  Expected { after 'if' condition   curly
+   81:57  warning  Expected { after 'if' condition   curly
+  278:26  warning  Expected { after 'if' condition   curly
+  282:60  warning  Expected { after 'if' condition   curly
+  297:46  warning  Expected { after 'if' condition   curly
+  300:33  warning  Expected { after 'if' condition   curly
+  303:42  warning  Expected { after 'if' condition   curly
+  338:21  warning  Expected { after 'if' condition   curly
+  344:41  warning  Expected { after 'if' condition   curly
+  346:46  warning  Expected { after 'for' condition  curly
+  352:24  warning  Expected { after 'if' condition   curly
+  354:37  warning  Expected { after 'if' condition   curly
+  356:42  warning  Expected { after 'for' condition  curly
+
+C:\Users\nealc\git\db-extension\src\providers\csvPreviewPanel.ts
+  51:20  warning  Expected { after 'if' condition  curly
+  79:46  warning  Expected { after 'for-of'        curly
+  85:38  warning  Expected { after 'for-of'        curly
+  86:41  warning  Expected { after 'for-of'        curly
+  93:36  warning  Expected { after 'for-of'        curly
+
+C:\Users\nealc\git\db-extension\src\utils\csvUtils.ts
+  54:28  warning  Expected { after 'if' condition  curly
+
+✖ 19 problems (0 errors, 19 warnings)
+  0 errors and 19 warnings potentially fixable with the `--fix` option.
+
+
+> db-extension@0.0.1 test
+> vscode-test
+
+- Resolving version...
+✔ Validated version: 1.106.3
+✔ Found existing install in C:\Users\nealc\git\db-extension\.vscode-test\vscode-win32-x64-archive-1.106.3
+
+[main 2025-12-01T02:31:13.686Z] update#setState disabled
+[main 2025-12-01T02:31:13.688Z] update#ctor - updates are disabled by the environment
+[main 2025-12-01T02:31:13.950Z] Error: Error mutex already exists
+    at Tu.S (file:///C:/Users/nealc/git/db-extension/.vscode-test/vscode-win32-x64-archive-1.106.3/resources/app/out/main.js:128:18405)
+ChatSessionStore: Migrating 0 chat sessions from storage service to file system
+Started local extension host with pid 20660.
+Loading development extension at c:\Users\nealc\git\db-extension
+MCP Registry configured: https://api.mcp.github.com
+Settings Sync: Account status changed from uninitialized to unavailable
+[DefaultAccount] Failed to create default account for provider: github Timed out waiting for authentication provider 'github' to register.
+
+  Extension Test Suite
+    ✔ Sample test
+  Linear Regression Tests
+Test data path: c:\Users\nealc\git\db-extension\test_data.csv
+=== REGRESSION CALCULATION ===
+Data loaded: {
+  rows: 10,
+  yColumn: 'Score',
+  xColumns: [ 'Hours' ],
+  actualCsvColumns: [ 'Hours' ],
+  dummyColumnNames: []
+}
+Y values sample (first 5): [ 65, 75, 85, 95, 105 ]
+Regression data sample (first row): [ 2 ]
+Regression result: { intercept: 44.6666666666667, slopes: [ 9.787878787878784 ] }
+Slopes: { Hours: 9.787878787878784 }
+Intercept: 44.6666666666667 type: number
+Predictions sample (first 5): [
+  64.24242424242426,
+  74.03030303030306,
+  83.81818181818184,
+  93.60606060606062,
+  103.3939393939394
+]
+Y mean: 98.5
+SS Total: 7952.5
+SS Residual: 48.78787878787868
+R² (before NaN check): 0.9938650891181542 type: number
+Sample size (n): 10 Parameters (p): 1
+Adjusted R² calculated: 0.9930982252579235
+Adjusted R² (before NaN check): 0.9930982252579235 type: number
+Multiple R: 0.9969278254307852
+Standard Error: 2.4695110545378887
+Final result: {
+  rSquared: 0.9938650891181542,
+  adjustedRSquared: 0.9930982252579235,
+  multipleR: 0.9969278254307852,
+  standardError: 2.4695110545378887,
+  intercept: 44.6666666666667,
+  slopesCount: 1
+}
+Regression Results:
+  Intercept: 44.6666666666667
+  Slope (Hours): 9.787878787878784
+  R²: 0.9938650891181542
+  Adjusted R²: 0.9930982252579235
+  Predictions: [
+  64.24242424242426,
+  74.03030303030306,
+  83.81818181818184,
+  93.60606060606062,
+  103.3939393939394,
+  113.18181818181819,
+  122.96969696969697,
+  54.45454545454548,
+  132.75757575757575,
+  142.54545454545453
+]
+  X Columns: [ 'Hours' ]
+Y mean: 98.5
+SS Total: 7952.5
+SS Residual: 48.78787878787868
+Expected R²: 0.9938650891181542
+Expected Adjusted R²: 0.9930982252579235
+✓ Simple linear regression test passed
+    ✔ Simple linear regression with test_data.csv
+=== REGRESSION CALCULATION ===
+Data loaded: {
+  rows: 10,
+  yColumn: 'Score',
+  xColumns: [ 'Hours' ],
+  actualCsvColumns: [ 'Hours' ],
+  dummyColumnNames: []
+}
+Y values sample (first 5): [ 65, 75, 85, 95, 105 ]
+Regression data sample (first row): [ 2 ]
+Regression result: { intercept: 44.6666666666667, slopes: [ 9.787878787878784 ] }
+Slopes: { Hours: 9.787878787878784 }
+Intercept: 44.6666666666667 type: number
+Predictions sample (first 5): [
+  64.24242424242426,
+  74.03030303030306,
+  83.81818181818184,
+  93.60606060606062,
+  103.3939393939394
+]
+Y mean: 98.5
+SS Total: 7952.5
+SS Residual: 48.78787878787868
+R² (before NaN check): 0.9938650891181542 type: number
+Sample size (n): 10 Parameters (p): 1
+Adjusted R² calculated: 0.9930982252579235
+Adjusted R² (before NaN check): 0.9930982252579235 type: number
+Multiple R: 0.9969278254307852
+Standard Error: 2.4695110545378887
+Final result: {
+  rSquared: 0.9938650891181542,
+  adjustedRSquared: 0.9930982252579235,
+  multipleR: 0.9969278254307852,
+  standardError: 2.4695110545378887,
+  intercept: 44.6666666666667,
+  slopesCount: 1
+}
+Multivariate Regression Results:
+  Intercept: 44.6666666666667
+  R²: 0.9938650891181542
+  Adjusted R²: 0.9930982252579235
+✓ Multivariate regression test passed
+    ✔ Multivariate regression with test_data.csv
+=== REGRESSION CALCULATION ===
+Data loaded: {
+  rows: 10,
+  yColumn: 'Score',
+  xColumns: [ 'Hours', 'Category_B' ],
+  actualCsvColumns: [ 'Hours' ],
+  dummyColumnNames: [ 'Category_B' ]
+}
+Y values sample (first 5): [ 65, 75, 85, 95, 105 ]
+Regression data sample (first row): [ 2, 0 ]
+Regression result: {
+  intercept: 45.35049019607847,
+  slopes: [ 9.767156862745093, -1.139705882352945 ]
+}
+Slopes: { Hours: 9.767156862745093, Category_B: -1.139705882352945 }
+Intercept: 45.35049019607847 type: number
+Predictions sample (first 5): [
+  64.88480392156865,
+  73.5122549019608,
+  84.41911764705884,
+  93.046568627451,
+  103.95343137254903
+]
+Y mean: 98.5
+SS Total: 7952.5
+SS Residual: 45.575980392156836
+R² (before NaN check): 0.9942689744869969 type: number
+Sample size (n): 10 Parameters (p): 2
+Adjusted R² calculated: 0.9926315386261388
+Adjusted R² (before NaN check): 0.9926315386261388 type: number
+Multiple R: 0.9971303698549137
+Standard Error: 2.551637580405315
+Final result: {
+  rSquared: 0.9942689744869969,
+  adjustedRSquared: 0.9926315386261388,
+  multipleR: 0.9971303698549137,
+  standardError: 2.551637580405315,
+  intercept: 45.35049019607847,
+  slopesCount: 2
+}
+Dummy Variable Regression Results:
+  Intercept: 45.35049019607847
+  Slopes: { Hours: 9.767156862745093, Category_B: -1.139705882352945 }
+  R²: 0.9942689744869969
+  Adjusted R²: 0.9926315386261388
+  X Columns: [ 'Hours', 'Category_B' ]
+✓ Dummy variable regression test passed
+    ✔ Regression with dummy variables
+=== REGRESSION CALCULATION ===
+Data loaded: {
+  rows: 10,
+  yColumn: 'Score',
+  xColumns: [ 'Hours' ],
+  actualCsvColumns: [ 'Hours' ],
+  dummyColumnNames: []
+}
+Y values sample (first 5): [ 65, 75, 85, 95, 105 ]
+Regression data sample (first row): [ 2 ]
+Regression result: { intercept: 44.6666666666667, slopes: [ 9.787878787878784 ] }
+Slopes: { Hours: 9.787878787878784 }
+Intercept: 44.6666666666667 type: number
+Predictions sample (first 5): [
+  64.24242424242426,
+  74.03030303030306,
+  83.81818181818184,
+  93.60606060606062,
+  103.3939393939394
+]
+Y mean: 98.5
+SS Total: 7952.5
+SS Residual: 48.78787878787868
+R² (before NaN check): 0.9938650891181542 type: number
+Sample size (n): 10 Parameters (p): 1
+Adjusted R² calculated: 0.9930982252579235
+Adjusted R² (before NaN check): 0.9930982252579235 type: number
+Multiple R: 0.9969278254307852
+Standard Error: 2.4695110545378887
+Final result: {
+  rSquared: 0.9938650891181542,
+  adjustedRSquared: 0.9930982252579235,
+  multipleR: 0.9969278254307852,
+  standardError: 2.4695110545378887,
+  intercept: 44.6666666666667,
+  slopesCount: 1
+}
+Slope Equation Validation:
+  Intercept: 44.6666666666667
+  Slope: 9.787878787878784
+  Expected equation: Y = 44.6667 + 9.7879 * X
+Validating each prediction against equation: Y = 44.6667 + 9.7879 * X
+  Point 1: X=2, Actual Y=65, Predicted Y=64.2424, Calculated Y=64.2424
+  Point 2: X=3, Actual Y=75, Predicted Y=74.0303, Calculated Y=74.0303
+  Point 3: X=4, Actual Y=85, Predicted Y=83.8182, Calculated Y=83.8182
+  Point 4: X=5, Actual Y=95, Predicted Y=93.6061, Calculated Y=93.6061
+  Point 5: X=6, Actual Y=105, Predicted Y=103.3939, Calculated Y=103.3939
+  Point 6: X=7, Actual Y=115, Predicted Y=113.1818, Calculated Y=113.1818
+  Point 7: X=8, Actual Y=125, Predicted Y=122.9697, Calculated Y=122.9697
+  Point 8: X=1, Actual Y=50, Predicted Y=54.4545, Calculated Y=54.4545
+  Point 9: X=9, Actual Y=130, Predicted Y=132.7576, Calculated Y=132.7576
+  Point 10: X=10, Actual Y=140, Predicted Y=142.5455, Calculated Y=142.5455
+✓ Slope equation validation passed - all predictions match the equation
+    ✔ Slope equation validation
+=== REGRESSION CALCULATION ===
+Data loaded: {
+  rows: 10,
+  yColumn: 'Score',
+  xColumns: [ 'Hours', 'Category_B' ],
+  actualCsvColumns: [ 'Hours' ],
+  dummyColumnNames: [ 'Category_B' ]
+}
+Y values sample (first 5): [ 65, 75, 85, 95, 105 ]
+Regression data sample (first row): [ 2, 0 ]
+Regression result: {
+  intercept: 45.35049019607847,
+  slopes: [ 9.767156862745093, -1.139705882352945 ]
+}
+Slopes: { Hours: 9.767156862745093, Category_B: -1.139705882352945 }
+Intercept: 45.35049019607847 type: number
+Predictions sample (first 5): [
+  64.88480392156865,
+  73.5122549019608,
+  84.41911764705884,
+  93.046568627451,
+  103.95343137254903
+]
+Y mean: 98.5
+SS Total: 7952.5
+SS Residual: 45.575980392156836
+R² (before NaN check): 0.9942689744869969 type: number
+Sample size (n): 10 Parameters (p): 2
+Adjusted R² calculated: 0.9926315386261388
+Adjusted R² (before NaN check): 0.9926315386261388 type: number
+Multiple R: 0.9971303698549137
+Standard Error: 2.551637580405315
+Final result: {
+  rSquared: 0.9942689744869969,
+  adjustedRSquared: 0.9926315386261388,
+  multipleR: 0.9971303698549137,
+  standardError: 2.551637580405315,
+  intercept: 45.35049019607847,
+  slopesCount: 2
+}
+Multivariate Slope Equation Validation:
+  Intercept: 45.35049019607847
+  Slope (Hours): 9.767156862745093
+  Slope (Category_B): -1.139705882352945
+  Expected equation: Y = 45.3505 + 9.7672 * Hours + -1.1397 * Category_B
+Validating each prediction against multivariate equation
+  Point 1: Hours=2, Category_B=0, Actual Y=65, Predicted Y=64.8848, Calculated Y=64.8848
+  Point 2: Hours=3, Category_B=1, Actual Y=75, Predicted Y=73.5123, Calculated Y=73.5123
+  Point 3: Hours=4, Category_B=0, Actual Y=85, Predicted Y=84.4191, Calculated Y=84.4191
+  Point 4: Hours=5, Category_B=1, Actual Y=95, Predicted Y=93.0466, Calculated Y=93.0466
+  Point 5: Hours=6, Category_B=0, Actual Y=105, Predicted Y=103.9534, Calculated Y=103.9534
+  Point 6: Hours=7, Category_B=1, Actual Y=115, Predicted Y=112.5809, Calculated Y=112.5809
+  Point 7: Hours=8, Category_B=0, Actual Y=125, Predicted Y=123.4877, Calculated Y=123.4877
+  Point 8: Hours=1, Category_B=1, Actual Y=50, Predicted Y=53.9779, Calculated Y=53.9779
+  Point 9: Hours=9, Category_B=0, Actual Y=130, Predicted Y=133.2549, Calculated Y=133.2549
+  Point 10: Hours=10, Category_B=1, Actual Y=140, Predicted Y=141.8824, Calculated Y=141.8824
+✓ Multivariate slope equation validation passed - all predictions match the equation
+    ✔ Multivariate slope equation validation
+=== REGRESSION CALCULATION ===
+Data loaded: {
+  rows: 10,
+  yColumn: 'Score',
+  xColumns: [ 'Hours', 'Category_B' ],
+  actualCsvColumns: [ 'Hours' ],
+  dummyColumnNames: [ 'Category_B' ]
+}
+Y values sample (first 5): [ 65, 75, 85, 95, 105 ]
+Regression data sample (first row): [ 2, 0 ]
+Regression result: {
+  intercept: 45.35049019607847,
+  slopes: [ 9.767156862745093, -1.139705882352945 ]
+}
+Slopes: { Hours: 9.767156862745093, Category_B: -1.139705882352945 }
+Intercept: 45.35049019607847 type: number
+Predictions sample (first 5): [
+  64.88480392156865,
+  73.5122549019608,
+  84.41911764705884,
+  93.046568627451,
+  103.95343137254903
+]
+Y mean: 98.5
+SS Total: 7952.5
+SS Residual: 45.575980392156836
+R² (before NaN check): 0.9942689744869969 type: number
+Sample size (n): 10 Parameters (p): 2
+Adjusted R² calculated: 0.9926315386261388
+Adjusted R² (before NaN check): 0.9926315386261388 type: number
+Multiple R: 0.9971303698549137
+Standard Error: 2.551637580405315
+Final result: {
+  rSquared: 0.9942689744869969,
+  adjustedRSquared: 0.9926315386261388,
+  multipleR: 0.9971303698549137,
+  standardError: 2.551637580405315,
+  intercept: 45.35049019607847,
+  slopesCount: 2
+}
+Base Case Exclusion Test (Category_A as base case):
+  X Columns in equation: [ 'Hours', 'Category_B' ]
+  Intercept: 45.35049019607847
+  Slopes: { Hours: 9.767156862745093, Category_B: -1.139705882352945 }
+✓ Base case exclusion test passed - Category_A correctly excluded from equation
+    ✔ Base case exclusion from equation - Category_A as base case
+=== REGRESSION CALCULATION ===
+Data loaded: {
+  rows: 10,
+  yColumn: 'Score',
+  xColumns: [ 'Hours', 'Category_B' ],
+  actualCsvColumns: [ 'Hours' ],
+  dummyColumnNames: [ 'Category_B' ]
+}
+Y values sample (first 5): [ 65, 75, 85, 95, 105 ]
+Regression data sample (first row): [ 2, 0 ]
+Regression result: {
+  intercept: 45.35049019607847,
+  slopes: [ 9.767156862745093, -1.139705882352945 ]
+}
+Slopes: { Hours: 9.767156862745093, Category_B: -1.139705882352945 }
+Intercept: 45.35049019607847 type: number
+Predictions sample (first 5): [
+  64.88480392156865,
+  73.5122549019608,
+  84.41911764705884,
+  93.046568627451,
+  103.95343137254903
+]
+Y mean: 98.5
+SS Total: 7952.5
+SS Residual: 45.575980392156836
+R² (before NaN check): 0.9942689744869969 type: number
+Sample size (n): 10 Parameters (p): 2
+Adjusted R² calculated: 0.9926315386261388
+Adjusted R² (before NaN check): 0.9926315386261388 type: number
+Multiple R: 0.9971303698549137
+Standard Error: 2.551637580405315
+Final result: {
+  rSquared: 0.9942689744869969,
+  adjustedRSquared: 0.9926315386261388,
+  multipleR: 0.9971303698549137,
+  standardError: 2.551637580405315,
+  intercept: 45.35049019607847,
+  slopesCount: 2
+}
+Base Case Change Test - Category_A as base case (initial):
+  X Columns: [ 'Hours', 'Category_B' ]
+  Slopes: { Hours: 9.767156862745093, Category_B: -1.139705882352945 }
+  Category_B slope when A is base case: -1.139705882352945
+=== REGRESSION CALCULATION ===
+Data loaded: {
+  rows: 10,
+  yColumn: 'Score',
+  xColumns: [ 'Hours', 'Category_B' ],
+  actualCsvColumns: [ 'Hours' ],
+  dummyColumnNames: [ 'Category_B' ]
+}
+Y values sample (first 5): [ 65, 75, 85, 95, 105 ]
+Regression data sample (first row): [ 2, 0 ]
+Regression result: {
+  intercept: 45.35049019607847,
+  slopes: [ 9.767156862745093, -1.139705882352945 ]
+}
+Slopes: { Hours: 9.767156862745093, Category_B: -1.139705882352945 }
+Intercept: 45.35049019607847 type: number
+Predictions sample (first 5): [
+  64.88480392156865,
+  73.5122549019608,
+  84.41911764705884,
+  93.046568627451,
+  103.95343137254903
+]
+Y mean: 98.5
+SS Total: 7952.5
+SS Residual: 45.575980392156836
+R² (before NaN check): 0.9942689744869969 type: number
+Sample size (n): 10 Parameters (p): 2
+Adjusted R² calculated: 0.9926315386261388
+Adjusted R² (before NaN check): 0.9926315386261388 type: number
+Multiple R: 0.9971303698549137
+Standard Error: 2.551637580405315
+Final result: {
+  rSquared: 0.9942689744869969,
+  adjustedRSquared: 0.9926315386261388,
+  multipleR: 0.9971303698549137,
+  standardError: 2.551637580405315,
+  intercept: 45.35049019607847,
+  slopesCount: 2
+}
+Base Case Change Test - Second regression call:
+  X Columns: [ 'Hours', 'Category_B' ]
+  Slopes: { Hours: 9.767156862745093, Category_B: -1.139705882352945 }
+  Category_B slope for second call: -1.139705882352945
+✓ Base case change test passed - consistent behavior with same parameters
+    ✔ Base case change validation - switching from Category_A to Category_B
+=== REGRESSION CALCULATION ===
+Data loaded: {
+  rows: 10,
+  yColumn: 'Score',
+  xColumns: [ 'Hours', 'Category_B', 'Category_C' ],
+  actualCsvColumns: [ 'Hours' ],
+  dummyColumnNames: [ 'Category_B', 'Category_C' ]
+}
+Y values sample (first 5): [ 65, 75, 85, 95, 105 ]
+Regression data sample (first row): [ 2, 0, 0 ]
+Regression result: {
+  intercept: 45.35049019607847,
+  slopes: [ 9.767156862745093, -1.139705882352945, 0 ]
+}
+Slopes: {
+  Hours: 9.767156862745093,
+  Category_B: -1.139705882352945,
+  Category_C: 0
+}
+Intercept: 45.35049019607847 type: number
+Predictions sample (first 5): [
+  64.88480392156865,
+  73.5122549019608,
+  84.41911764705884,
+  93.046568627451,
+  103.95343137254903
+]
+Y mean: 98.5
+SS Total: 7952.5
+SS Residual: 45.575980392156836
+R² (before NaN check): 0.9942689744869969 type: number
+Sample size (n): 10 Parameters (p): 3
+Adjusted R² calculated: 0.9914034617304954
+Adjusted R² (before NaN check): 0.9914034617304954 type: number
+Multiple R: 0.9971303698549137
+Standard Error: 2.7560835858199475
+Final result: {
+  rSquared: 0.9942689744869969,
+  adjustedRSquared: 0.9914034617304954,
+  multipleR: 0.9971303698549137,
+  standardError: 2.7560835858199475,
+  intercept: 45.35049019607847,
+  slopesCount: 3
+}
+Three-Category Base Case Test:
+  X Columns in equation: [ 'Hours', 'Category_B', 'Category_C' ]
+  Slopes: {
+  Hours: 9.767156862745093,
+  Category_B: -1.139705882352945,
+  Category_C: 0
+}
+  Intercept represents coefficient for base case (Category_A)
+  Intercept represents estimated Score when Category=A and Hours=0
+✓ Three-category base case test passed - only non-base categories in equation
+    ✔ Three-category dummy variable base case validation
+=== REGRESSION CALCULATION ===
+Data loaded: {
+  rows: 10,
+  yColumn: 'Score',
+  xColumns: [ 'Hours' ],
+  actualCsvColumns: [ 'Hours' ],
+  dummyColumnNames: []
+}
+Y values sample (first 5): [ 65, 75, 85, 95, 105 ]
+Regression data sample (first row): [ 2 ]
+Regression result: { intercept: 44.6666666666667, slopes: [ 9.787878787878784 ] }
+Slopes: { Hours: 9.787878787878784 }
+Intercept: 44.6666666666667 type: number
+Predictions sample (first 5): [
+  64.24242424242426,
+  74.03030303030306,
+  83.81818181818184,
+  93.60606060606062,
+  103.3939393939394
+]
+Y mean: 98.5
+SS Total: 7952.5
+SS Residual: 48.78787878787868
+R² (before NaN check): 0.9938650891181542 type: number
+Sample size (n): 10 Parameters (p): 1
+Adjusted R² calculated: 0.9930982252579235
+Adjusted R² (before NaN check): 0.9930982252579235 type: number
+Multiple R: 0.9969278254307852
+Standard Error: 2.4695110545378887
+Final result: {
+  rSquared: 0.9938650891181542,
+  adjustedRSquared: 0.9930982252579235,
+  multipleR: 0.9969278254307852,
+  standardError: 2.4695110545378887,
+  intercept: 44.6666666666667,
+  slopesCount: 1
+}
+Multiple R Test (Simple Regression):
+  R²: 0.9938650891181542
+  Multiple R: 0.9969278254307852
+  Expected Multiple R (sqrt(R²)): 0.9969278254307852
+✓ Multiple R calculation test passed
+    ✔ Multiple R calculation in simple regression
+=== REGRESSION CALCULATION ===
+Data loaded: {
+  rows: 10,
+  yColumn: 'Score',
+  xColumns: [ 'Hours', 'Category_B' ],
+  actualCsvColumns: [ 'Hours' ],
+  dummyColumnNames: [ 'Category_B' ]
+}
+Y values sample (first 5): [ 65, 75, 85, 95, 105 ]
+Regression data sample (first row): [ 2, 0 ]
+Regression result: {
+  intercept: 45.35049019607847,
+  slopes: [ 9.767156862745093, -1.139705882352945 ]
+}
+Slopes: { Hours: 9.767156862745093, Category_B: -1.139705882352945 }
+Intercept: 45.35049019607847 type: number
+Predictions sample (first 5): [
+  64.88480392156865,
+  73.5122549019608,
+  84.41911764705884,
+  93.046568627451,
+  103.95343137254903
+]
+Y mean: 98.5
+SS Total: 7952.5
+SS Residual: 45.575980392156836
+R² (before NaN check): 0.9942689744869969 type: number
+Sample size (n): 10 Parameters (p): 2
+Adjusted R² calculated: 0.9926315386261388
+Adjusted R² (before NaN check): 0.9926315386261388 type: number
+Multiple R: 0.9971303698549137
+Standard Error: 2.551637580405315
+Final result: {
+  rSquared: 0.9942689744869969,
+  adjustedRSquared: 0.9926315386261388,
+  multipleR: 0.9971303698549137,
+  standardError: 2.551637580405315,
+  intercept: 45.35049019607847,
+  slopesCount: 2
+}
+Multiple R Test (Multivariate Regression):
+  R²: 0.9942689744869969
+  Multiple R: 0.9971303698549137
+  Expected Multiple R (sqrt(R²)): 0.9971303698549137
+✓ Multiple R calculation for multivariate regression passed
+    ✔ Multiple R calculation in multivariate regression
+=== REGRESSION CALCULATION ===
+Data loaded: {
+  rows: 10,
+  yColumn: 'Score',
+  xColumns: [ 'Hours' ],
+  actualCsvColumns: [ 'Hours' ],
+  dummyColumnNames: []
+}
+Y values sample (first 5): [ 65, 75, 85, 95, 105 ]
+Regression data sample (first row): [ 2 ]
+Regression result: { intercept: 44.6666666666667, slopes: [ 9.787878787878784 ] }
+Slopes: { Hours: 9.787878787878784 }
+Intercept: 44.6666666666667 type: number
+Predictions sample (first 5): [
+  64.24242424242426,
+  74.03030303030306,
+  83.81818181818184,
+  93.60606060606062,
+  103.3939393939394
+]
+Y mean: 98.5
+SS Total: 7952.5
+SS Residual: 48.78787878787868
+R² (before NaN check): 0.9938650891181542 type: number
+Sample size (n): 10 Parameters (p): 1
+Adjusted R² calculated: 0.9930982252579235
+Adjusted R² (before NaN check): 0.9930982252579235 type: number
+Multiple R: 0.9969278254307852
+Standard Error: 2.4695110545378887
+Final result: {
+  rSquared: 0.9938650891181542,
+  adjustedRSquared: 0.9930982252579235,
+  multipleR: 0.9969278254307852,
+  standardError: 2.4695110545378887,
+  intercept: 44.6666666666667,
+  slopesCount: 1
+}
+Standard Error Test (Simple Regression):
+  Standard Error: 2.4695110545378887
+  Predictions: 10
+  SS Residual: 48.78787878787868
+  n: 10 p: 1
+  Degrees of freedom (n - p - 1): 8
+  Expected Standard Error: 2.4695110545378887
+✓ Standard Error calculation test passed
+    ✔ Standard Error calculation in simple regression
+=== REGRESSION CALCULATION ===
+Data loaded: {
+  rows: 10,
+  yColumn: 'Score',
+  xColumns: [ 'Hours', 'Category_B' ],
+  actualCsvColumns: [ 'Hours' ],
+  dummyColumnNames: [ 'Category_B' ]
+}
+Y values sample (first 5): [ 65, 75, 85, 95, 105 ]
+Regression data sample (first row): [ 2, 0 ]
+Regression result: {
+  intercept: 45.35049019607847,
+  slopes: [ 9.767156862745093, -1.139705882352945 ]
+}
+Slopes: { Hours: 9.767156862745093, Category_B: -1.139705882352945 }
+Intercept: 45.35049019607847 type: number
+Predictions sample (first 5): [
+  64.88480392156865,
+  73.5122549019608,
+  84.41911764705884,
+  93.046568627451,
+  103.95343137254903
+]
+Y mean: 98.5
+SS Total: 7952.5
+SS Residual: 45.575980392156836
+R² (before NaN check): 0.9942689744869969 type: number
+Sample size (n): 10 Parameters (p): 2
+Adjusted R² calculated: 0.9926315386261388
+Adjusted R² (before NaN check): 0.9926315386261388 type: number
+Multiple R: 0.9971303698549137
+Standard Error: 2.551637580405315
+Final result: {
+  rSquared: 0.9942689744869969,
+  adjustedRSquared: 0.9926315386261388,
+  multipleR: 0.9971303698549137,
+  standardError: 2.551637580405315,
+  intercept: 45.35049019607847,
+  slopesCount: 2
+}
+Standard Error Test (Multivariate Regression):
+  Standard Error: 2.551637580405315
+  X Columns count: 2
+  SS Residual: 45.575980392156836
+  n: 10 p: 2
+  Degrees of freedom (n - p - 1): 7
+  Expected Standard Error: 2.551637580405315
+✓ Standard Error calculation for multivariate regression passed
+    ✔ Standard Error calculation in multivariate regression
+=== REGRESSION CALCULATION ===
+Data loaded: {
+  rows: 10,
+  yColumn: 'Score',
+  xColumns: [ 'Hours' ],
+  actualCsvColumns: [ 'Hours' ],
+  dummyColumnNames: []
+}
+Y values sample (first 5): [ 65, 75, 85, 95, 105 ]
+Regression data sample (first row): [ 2 ]
+Regression result: { intercept: 44.6666666666667, slopes: [ 9.787878787878784 ] }
+Slopes: { Hours: 9.787878787878784 }
+Intercept: 44.6666666666667 type: number
+Predictions sample (first 5): [
+  64.24242424242426,
+  74.03030303030306,
+  83.81818181818184,
+  93.60606060606062,
+  103.3939393939394
+]
+Y mean: 98.5
+SS Total: 7952.5
+SS Residual: 48.78787878787868
+R² (before NaN check): 0.9938650891181542 type: number
+Sample size (n): 10 Parameters (p): 1
+Adjusted R² calculated: 0.9930982252579235
+Adjusted R² (before NaN check): 0.9930982252579235 type: number
+Multiple R: 0.9969278254307852
+Standard Error: 2.4695110545378887
+Final result: {
+  rSquared: 0.9938650891181542,
+  adjustedRSquared: 0.9930982252579235,
+  multipleR: 0.9969278254307852,
+  standardError: 2.4695110545378887,
+  intercept: 44.6666666666667,
+  slopesCount: 1
+}
+✓ Standard Error edge case validation passed
+    ✔ Standard Error is zero when degrees of freedom <= 0
+=== REGRESSION CALCULATION ===
+Data loaded: {
+  rows: 10,
+  yColumn: 'Score',
+  xColumns: [ 'Hours' ],
+  actualCsvColumns: [ 'Hours' ],
+  dummyColumnNames: []
+}
+Y values sample (first 5): [ 65, 75, 85, 95, 105 ]
+Regression data sample (first row): [ 2 ]
+Regression result: { intercept: 44.6666666666667, slopes: [ 9.787878787878784 ] }
+Slopes: { Hours: 9.787878787878784 }
+Intercept: 44.6666666666667 type: number
+Predictions sample (first 5): [
+  64.24242424242426,
+  74.03030303030306,
+  83.81818181818184,
+  93.60606060606062,
+  103.3939393939394
+]
+Y mean: 98.5
+SS Total: 7952.5
+SS Residual: 48.78787878787868
+R² (before NaN check): 0.9938650891181542 type: number
+Sample size (n): 10 Parameters (p): 1
+Adjusted R² calculated: 0.9930982252579235
+Adjusted R² (before NaN check): 0.9930982252579235 type: number
+Multiple R: 0.9969278254307852
+Standard Error: 2.4695110545378887
+Final result: {
+  rSquared: 0.9938650891181542,
+  adjustedRSquared: 0.9930982252579235,
+  multipleR: 0.9969278254307852,
+  standardError: 2.4695110545378887,
+  intercept: 44.6666666666667,
+  slopesCount: 1
+}
+Results Completeness Test:
+  Results keys: [
+  'slopes',
+  'intercept',
+  'rSquared',
+  'adjustedRSquared',
+  'multipleR',
+  'standardError',
+  'predictions',
+  'xColumns'
+]
+✓ All regression statistics included in results
+    ✔ Multiple R and Standard Error included in regression results
+  15 passing (415ms)
+[main 2025-12-01T02:31:25.166Z] Extension host with pid 20660 exited with code: 0, signal: unknown.
+Exit code:   0

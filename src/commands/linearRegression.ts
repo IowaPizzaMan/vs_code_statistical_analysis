@@ -211,6 +211,8 @@ export function registerLinearRegression(
                     intercept: entry.intercept,
                     rSquared: entry.rSquared,
                     adjustedRSquared: entry.adjustedRSquared,
+                    multipleR: entry.multipleR,
+                    standardError: entry.standardError,
                     predictions: entry.predictions,
                     xColumns: entry.xColumns
                 };
@@ -415,6 +417,8 @@ async function runRegressionLogic(
             yColumn,
             results.rSquared,
             results.adjustedRSquared,
+            results.multipleR,
+            results.standardError,
             results.intercept,
             results.slopes,
             results.predictions

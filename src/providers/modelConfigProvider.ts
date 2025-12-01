@@ -60,52 +60,52 @@ export class ModelConfigProvider implements vscode.TreeDataProvider<ConfigItem> 
         if (element.contextValue === 'ycol-header') {
             return this.yColumn
                 ? [
-                      new ConfigItem(
-                          this.yColumn,
-                          vscode.TreeItemCollapsibleState.None,
-                          'ycol-item',
-                          this.yColumn,
-                          false,
-                          {
-                              command: 'db-extension.openColumnFromModelConfig',
-                              title: 'Open Column',
-                              arguments: [this.yColumn]
-                          }
-                      )
-                  ]
+                    new ConfigItem(
+                        this.yColumn,
+                        vscode.TreeItemCollapsibleState.None,
+                        'ycol-item',
+                        this.yColumn,
+                        false,
+                        {
+                            command: 'db-extension.openColumnFromModelConfig',
+                            title: 'Open Column',
+                            arguments: [this.yColumn]
+                        }
+                    )
+                ]
                 : [
-                      new ConfigItem(
-                          'No Y column selected',
-                          vscode.TreeItemCollapsibleState.None,
-                          'ycol-empty'
-                      )
-                  ];
+                    new ConfigItem(
+                        'No Y column selected',
+                        vscode.TreeItemCollapsibleState.None,
+                        'ycol-empty'
+                    )
+                ];
         }
 
         if (element.contextValue === 'xcol-header') {
             return this.xColumns.length > 0
                 ? this.xColumns.map(
-                      col =>
-                          new ConfigItem(
-                              col,
-                              vscode.TreeItemCollapsibleState.None,
-                              'xcol-item',
-                              col,
-                              false,
-                              {
-                                  command: 'db-extension.openColumnFromModelConfig',
-                                  title: 'Open Column',
-                                  arguments: [col]
-                              }
-                          )
-                  )
+                    col =>
+                        new ConfigItem(
+                            col,
+                            vscode.TreeItemCollapsibleState.None,
+                            'xcol-item',
+                            col,
+                            false,
+                            {
+                                command: 'db-extension.openColumnFromModelConfig',
+                                title: 'Open Column',
+                                arguments: [col]
+                            }
+                        )
+                )
                 : [
-                      new ConfigItem(
-                          'No X columns selected',
-                          vscode.TreeItemCollapsibleState.None,
-                          'xcol-empty'
-                      )
-                  ];
+                    new ConfigItem(
+                        'No X columns selected',
+                        vscode.TreeItemCollapsibleState.None,
+                        'xcol-empty'
+                    )
+                ];
         }
 
         if (element.contextValue === 'dummy-header') {
