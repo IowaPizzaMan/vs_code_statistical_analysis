@@ -9,13 +9,14 @@ export async function detectCategoricalColumns(filePath: string): Promise<{ [key
             }
 
             try {
-                const lines = data.split('\n').filter(line => line.trim());
-                if (lines.length < 2) {
+                const { parseCSV } = require('./csvUtils');
+                const rows: string[][] = parseCSV(data);
+                if (rows.length < 2) {
                     resolve({});
                     return;
                 }
 
-                const headers = lines[0].split(',').map(h => h.trim());
+                const headers = rows[0].map(h => h.trim());
                 const columnCategories: { [key: string]: Set<string> } = {};
 
                 headers.forEach(header => {
@@ -23,9 +24,9 @@ export async function detectCategoricalColumns(filePath: string): Promise<{ [key
                 });
 
                 // Sample first 100 rows to detect categories
-                const sampleSize = Math.min(100, lines.length - 1);
+                const sampleSize = Math.min(100, rows.length - 1);
                 for (let i = 1; i <= sampleSize; i++) {
-                    const values = lines[i].split(',').map(v => v.trim());
+                    const values = rows[i];
                     values.forEach((value, idx) => {
                         const header = headers[idx];
                         if (header && value) {
@@ -64,14 +65,14 @@ export async function createDummyVariables(
                 reject(err);
                 return;
             }
-
             try {
-                const lines = data.split('\n').filter(line => line.trim());
-                if (lines.length < 2) {
+                const { parseCSV } = require('./csvUtils');
+                const rows: string[][] = parseCSV(data);
+                if (rows.length < 2) {
                     throw new Error('CSV file must have at least 2 rows');
                 }
 
-                const headers = lines[0].split(',').map(h => h.trim());
+                const headers = rows[0].map(h => h.trim());
                 const colIndex = headers.indexOf(categoricalColumn);
 
                 if (colIndex === -1) {
@@ -80,8 +81,8 @@ export async function createDummyVariables(
 
                 // Get unique categories
                 const categories = new Set<string>();
-                for (let i = 1; i < lines.length; i++) {
-                    const values = lines[i].split(',').map(v => v.trim());
+                for (let i = 1; i < rows.length; i++) {
+                    const values = rows[i];
                     if (values[colIndex]) {
                         categories.add(values[colIndex]);
                     }
@@ -96,8 +97,8 @@ export async function createDummyVariables(
                     const category = categoryList[i];
                     dummies[`${categoricalColumn}_${category}`] = [];
 
-                    for (let j = 1; j < lines.length; j++) {
-                        const values = lines[j].split(',').map(v => v.trim());
+                    for (let j = 1; j < rows.length; j++) {
+                        const values = rows[j];
                         dummies[`${categoricalColumn}_${category}`].push(
                             values[colIndex] === category ? 1 : 0
                         );

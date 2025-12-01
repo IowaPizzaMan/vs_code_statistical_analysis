@@ -1,98 +1,134 @@
 import * as vscode from 'vscode';
 
 export class RegressionResultsPanel {
-    public static currentPanel: RegressionResultsPanel | undefined;
-    private readonly _panel: vscode.WebviewPanel;
-    private readonly _extensionUri: vscode.Uri;
-    private _disposables: vscode.Disposable[] = [];
+  public static currentPanel: RegressionResultsPanel | undefined;
+  private readonly _panel: vscode.WebviewPanel;
+  private readonly _extensionUri: vscode.Uri;
+  private _disposables: vscode.Disposable[] = [];
 
-    public static createOrShow(extensionUri: vscode.Uri) {
-        const column = vscode.window.activeTextEditor ? vscode.ViewColumn.Two : undefined;
+  public static createOrShow(extensionUri: vscode.Uri) {
+    const column = vscode.window.activeTextEditor ? vscode.ViewColumn.Two : undefined;
 
-        if (RegressionResultsPanel.currentPanel) {
-            RegressionResultsPanel.currentPanel._panel.reveal(column);
-            return;
-        }
-
-        const panel = vscode.window.createWebviewPanel(
-            'regressionResults',
-            'Regression Results',
-            column || vscode.ViewColumn.One,
-            {
-                enableScripts: true,
-                localResourceRoots: []
-            }
-        );
-
-        RegressionResultsPanel.currentPanel = new RegressionResultsPanel(panel, extensionUri);
+    if (RegressionResultsPanel.currentPanel) {
+      RegressionResultsPanel.currentPanel._panel.reveal(column);
+      return;
     }
 
-    private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
-        this._panel = panel;
-        this._extensionUri = extensionUri;
+    const panel = vscode.window.createWebviewPanel(
+      'regressionResults',
+      'Regression Results',
+      column || vscode.ViewColumn.One,
+      {
+        enableScripts: true,
+        localResourceRoots: []
+      }
+    );
 
-        this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
-        this._panel.webview.html = this._getHtmlForWebview();
+    RegressionResultsPanel.currentPanel = new RegressionResultsPanel(panel, extensionUri);
+  }
+
+  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
+    this._panel = panel;
+    this._extensionUri = extensionUri;
+
+    this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+    this._panel.webview.html = this._getHtmlForWebview();
+  }
+
+  public showResults(xColumns: string | string[], yColumn: string, results: any) {
+    console.log('=== REGRESSION RESULTS DISPLAY ===');
+    console.log('Input parameters:', { xColumns, yColumn });
+    console.log('Results object:', results);
+    console.log('Raw values:');
+    console.log('  - intercept:', results.intercept, 'type:', typeof results.intercept);
+    console.log('  - rSquared:', results.rSquared, 'type:', typeof results.rSquared);
+    console.log('  - adjustedRSquared:', results.adjustedRSquared, 'type:', typeof results.adjustedRSquared);
+    console.log('  - slopes:', results.slopes);
+    console.log('  - xColumns:', results.xColumns);
+    console.log('  - predictions length:', results.predictions?.length);
+
+    const { slopes, intercept, rSquared, adjustedRSquared, multipleR, standardError, predictions, xColumns: allXCols } = results;
+
+    // Helper function to format numbers with proper precision
+    const formatNumber = (num: number, decimals: number = 6): string => {
+      if (num === undefined || num === null || isNaN(num)) {
+        console.warn(`formatNumber: value is ${num}, returning N/A`);
+        return 'N/A';
+      }
+      // For very small numbers, use exponential notation
+      if (Math.abs(num) < 0.0001 && num !== 0) {
+        const result = num.toExponential(6);
+        console.log(`formatNumber: small number ${num} formatted as ${result}`);
+        return result;
+      }
+      const result = num.toFixed(decimals);
+      console.log(`formatNumber: number ${num} formatted as ${result}`);
+      return result;
+    };
+
+    // Add defensive checks
+    if (intercept === undefined) {
+      console.error('ERROR: intercept is undefined. Results object:', results);
+      vscode.window.showErrorMessage('Error displaying results: missing intercept value');
+      return;
+    }
+    if (!slopes || typeof slopes !== 'object') {
+      console.error('ERROR: slopes is invalid. Results object:', results);
+      vscode.window.showErrorMessage('Error displaying results: missing slopes');
+      return;
+    }
+    if (rSquared === undefined || adjustedRSquared === undefined) {
+      console.error('ERROR: R² values are undefined. Results object:', results);
+      console.error('  - rSquared:', rSquared);
+      console.error('  - adjustedRSquared:', adjustedRSquared);
+      vscode.window.showErrorMessage('Error displaying results: missing R² values');
+      return;
+    }
+    if (!Array.isArray(allXCols)) {
+      console.error('ERROR: xColumns is not an array. Results object:', results);
+      vscode.window.showErrorMessage('Error displaying results: invalid xColumns');
+      return;
     }
 
-    public showResults(xColumns: string | string[], yColumn: string, results: any) {
-        console.log('showResults called with:', { xColumns, yColumn, results });
+    console.log('All checks passed, building display...');
+    console.log('Formatted values:');
+    console.log('  - intercept:', formatNumber(intercept, 4));
+    console.log('  - rSquared:', formatNumber(rSquared, 6));
+    console.log('  - adjustedRSquared:', formatNumber(adjustedRSquared, 6));
 
-        const { slopes, intercept, rSquared, adjustedRSquared, predictions, xColumns: allXCols } = results;
+    // Support both single and multiple columns for backwards compatibility
+    const xColumnArray = Array.isArray(xColumns) ? xColumns : [xColumns];
 
-        // Add defensive checks
-        if (intercept === undefined) {
-            console.error('ERROR: intercept is undefined. Results object:', results);
-            vscode.window.showErrorMessage('Error displaying results: missing intercept value');
-            return;
-        }
-        if (!slopes || typeof slopes !== 'object') {
-            console.error('ERROR: slopes is invalid. Results object:', results);
-            vscode.window.showErrorMessage('Error displaying results: missing slopes');
-            return;
-        }
-        if (rSquared === undefined || adjustedRSquared === undefined) {
-            console.error('ERROR: R² values are undefined. Results object:', results);
-            vscode.window.showErrorMessage('Error displaying results: missing R² values');
-            return;
-        }
-        if (!Array.isArray(allXCols)) {
-            console.error('ERROR: xColumns is not an array. Results object:', results);
-            vscode.window.showErrorMessage('Error displaying results: invalid xColumns');
-            return;
-        }
+    // Build equation
+    let equation = `${yColumn} = ${formatNumber(intercept, 4)}`;
+    allXCols.forEach((col: string) => {
+      const coef = slopes[col];
+      if (coef === undefined) {
+        console.error(`ERROR: slope for ${col} is undefined`);
+        return;
+      }
+      const sign = coef >= 0 ? '+' : '';
+      equation += ` ${sign} ${formatNumber(coef, 4)} × ${col}`;
+    });
 
-        // Support both single and multiple columns for backwards compatibility
-        const xColumnArray = Array.isArray(xColumns) ? xColumns : [xColumns];
+    console.log('Equation:', equation);
 
-        // Build equation
-        let equation = `${yColumn} = ${intercept.toFixed(4)}`;
-        allXCols.forEach((col: string) => {
-            const coef = slopes[col];
-            if (coef === undefined) {
-                console.error(`ERROR: slope for ${col} is undefined`);
-                return;
-            }
-            const sign = coef >= 0 ? '+' : '';
-            equation += ` ${sign} ${coef.toFixed(4)} × ${col}`;
-        });
-
-        // Build coefficient rows
-        let coefficientRows = '';
-        allXCols.forEach((col: string) => {
-            const coef = slopes[col];
-            if (coef === undefined) {
-                console.error(`ERROR: slope for ${col} is undefined`);
-                return;
-            }
-            coefficientRows += `
+    // Build coefficient rows
+    let coefficientRows = '';
+    allXCols.forEach((col: string) => {
+      const coef = slopes[col];
+      if (coef === undefined) {
+        console.error(`ERROR: slope for ${col} is undefined`);
+        return;
+      }
+      coefficientRows += `
           <div class="metric">
             <span class="metric-label">${col}:</span>
-            <span class="metric-value">${coef.toFixed(6)}</span>
+            <span class="metric-value">${formatNumber(coef, 6)}</span>
           </div>`;
-        });
+    });
 
-        const html = `
+    const html = `
       <!DOCTYPE html>
       <html>
       <head>
@@ -149,20 +185,83 @@ export class RegressionResultsPanel {
           <h2 style="margin-top: 0; margin-bottom: 15px; color: #4ec9b0;">Coefficients</h2>
           <div class="metric">
             <span class="metric-label">Intercept:</span>
-            <span class="metric-value">${(intercept !== undefined ? intercept.toFixed(6) : 'N/A')}</span>
+            <span class="metric-value">${(intercept !== undefined ? formatNumber(intercept, 6) : 'N/A')}</span>
           </div>
           ${coefficientRows}
+        </div>
+
+        <div class="results-section">
+          <h2 style="margin-top: 0; margin-bottom: 15px; color: #4ec9b0;">Model Details</h2>
+          <table style="width: 100%; border-collapse: collapse; color: #e0e0e0;">
+            <thead>
+              <tr style="background-color: #2d2d30; border-bottom: 2px solid #4ec9b0;">
+                <th style="text-align: left; padding: 10px; color: #4ec9b0;">Variable</th>
+                <th style="text-align: right; padding: 10px; color: #4ec9b0;">Coefficient</th>
+                <th style="text-align: right; padding: 10px; color: #4ec9b0;">Std. Error</th>
+                <th style="text-align: right; padding: 10px; color: #4ec9b0;">t-Stat</th>
+                <th style="text-align: right; padding: 10px; color: #4ec9b0;">P-value</th>
+                <th style="text-align: right; padding: 10px; color: #4ec9b0;">Lower 95%</th>
+                <th style="text-align: right; padding: 10px; color: #4ec9b0;">Upper 95%</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${results.coefficientStats
+        ? Object.entries(results.coefficientStats)
+          .map(
+            ([varName, s]: [string, any]) => `
+                <tr style="border-bottom: 1px solid #3e3e42;">
+                  <td style="padding: 8px; font-weight: bold; color: #9cdcfe;">${varName}</td>
+                  <td style="padding: 8px; text-align: right; color: #ce9178;">${formatNumber(
+              s.coefficient,
+              6
+            )}</td>
+                  <td style="padding: 8px; text-align: right; color: #ce9178;">${formatNumber(
+              s.standardError,
+              6
+            )}</td>
+                  <td style="padding: 8px; text-align: right; color: #ce9178;">${formatNumber(
+              s.tStat,
+              6
+            )}</td>
+                  <td style="padding: 8px; text-align: right; color: #ce9178;">${formatNumber(
+              s.pValue,
+              6
+            )}</td>
+                  <td style="padding: 8px; text-align: right; color: #ce9178;">${formatNumber(
+              s.ci95Lower,
+              6
+            )}</td>
+                  <td style="padding: 8px; text-align: right; color: #ce9178;">${formatNumber(
+              s.ci95Upper,
+              6
+            )}</td>
+                </tr>
+              `
+          )
+          .join('')
+        : '<tr><td colspan="7" style="padding: 8px; color: #999;">Coefficient statistics not available</td></tr>'
+      }
+            </tbody>
+          </table>
         </div>
 
         <div class="results-section">
           <h2 style="margin-top: 0; margin-bottom: 15px; color: #4ec9b0;">Model Statistics</h2>
           <div class="metric">
             <span class="metric-label">R² (Coefficient of Determination):</span>
-            <span class="metric-value">${(rSquared !== undefined ? rSquared.toFixed(6) : 'N/A')}</span>
+            <span class="metric-value">${(rSquared !== undefined ? formatNumber(rSquared, 6) : 'N/A')}</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Multiple R:</span>
+            <span class="metric-value">${(multipleR !== undefined ? formatNumber(multipleR, 6) : 'N/A')}</span>
           </div>
           <div class="metric">
             <span class="metric-label">Adjusted R²:</span>
-            <span class="metric-value">${(adjustedRSquared !== undefined ? adjustedRSquared.toFixed(6) : 'N/A')}</span>
+            <span class="metric-value">${(adjustedRSquared !== undefined ? formatNumber(adjustedRSquared, 6) : 'N/A')}</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Standard Error:</span>
+            <span class="metric-value">${(standardError !== undefined ? formatNumber(standardError, 6) : 'N/A')}</span>
           </div>
           <div class="metric">
             <span class="metric-label">Data Points:</span>
@@ -172,27 +271,25 @@ export class RegressionResultsPanel {
             <span class="metric-label">Predictors:</span>
             <span class="metric-value">${allXCols.length}</span>
           </div>
-        </div>
-
-        <div class="results-section">
+        </div>        <div class="results-section">
           <h2 style="margin-top: 0; color: #4ec9b0;">Interpretation</h2>
           <p>
-            The model explains <strong>${(rSquared !== undefined ? (rSquared * 100).toFixed(2) : 'N/A')}%</strong> of the variance in <strong>${yColumn}</strong>.
+            The model explains <strong>${(rSquared !== undefined ? (rSquared * 100).toFixed(4) : 'N/A')}%</strong> of the variance in <strong>${yColumn}</strong>.
           </p>
           <p>
-            The adjusted R² of <strong>${(adjustedRSquared !== undefined ? adjustedRSquared.toFixed(4) : 'N/A')}</strong> accounts for the number of predictors in the model.
+            The adjusted R² of <strong>${(adjustedRSquared !== undefined ? formatNumber(adjustedRSquared, 6) : 'N/A')}</strong> accounts for the number of predictors in the model.
           </p>
         </div>
       </body>
       </html>
     `;
 
-        this._panel.webview.html = html;
-        this._panel.reveal(vscode.ViewColumn.Two);
-    }
+    this._panel.webview.html = html;
+    this._panel.reveal(vscode.ViewColumn.Two);
+  }
 
-    private _getHtmlForWebview() {
-        return `
+  private _getHtmlForWebview() {
+    return `
       <!DOCTYPE html>
       <html>
       <head>
@@ -216,13 +313,13 @@ export class RegressionResultsPanel {
       </body>
       </html>
     `;
-    }
+  }
 
-    public dispose() {
-        RegressionResultsPanel.currentPanel = undefined;
-        this._panel.dispose();
-        while (this._disposables.length) {
-            this._disposables.pop()?.dispose();
-        }
+  public dispose() {
+    RegressionResultsPanel.currentPanel = undefined;
+    this._panel.dispose();
+    while (this._disposables.length) {
+      this._disposables.pop()?.dispose();
     }
+  }
 }

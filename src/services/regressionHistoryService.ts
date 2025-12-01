@@ -5,6 +5,8 @@ export interface RegressionHistoryEntry {
     yColumn: string;
     rSquared: number;
     adjustedRSquared: number;
+    multipleR: number;
+    standardError: number;
     intercept: number;
     slopes: { [key: string]: number };
     predictions: number[];
@@ -19,6 +21,8 @@ export class RegressionHistoryService {
         yColumn: string,
         rSquared: number,
         adjustedRSquared: number,
+        multipleR: number,
+        standardError: number,
         intercept: number,
         slopes: { [key: string]: number },
         predictions: number[]
@@ -30,6 +34,8 @@ export class RegressionHistoryService {
             yColumn,
             rSquared,
             adjustedRSquared,
+            multipleR,
+            standardError,
             intercept,
             slopes,
             predictions

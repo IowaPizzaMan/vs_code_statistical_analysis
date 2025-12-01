@@ -9,6 +9,7 @@ export class ModelConfigProvider implements vscode.TreeDataProvider<ConfigItem> 
     private xColumns: string[] = [];
     private yColumn: string | null = null;
     private dummyColumns: string[] = [];
+    private baseCaseDummy: string | null = null;
 
     refresh(): void {
         this._onDidChangeTreeData.fire();
@@ -63,7 +64,13 @@ export class ModelConfigProvider implements vscode.TreeDataProvider<ConfigItem> 
                         this.yColumn,
                         vscode.TreeItemCollapsibleState.None,
                         'ycol-item',
-                        this.yColumn
+                        this.yColumn,
+                        false,
+                        {
+                            command: 'db-extension.openColumnFromModelConfig',
+                            title: 'Open Column',
+                            arguments: [this.yColumn]
+                        }
                     )
                 ]
                 : [
@@ -83,7 +90,13 @@ export class ModelConfigProvider implements vscode.TreeDataProvider<ConfigItem> 
                             col,
                             vscode.TreeItemCollapsibleState.None,
                             'xcol-item',
-                            col
+                            col,
+                            false,
+                            {
+                                command: 'db-extension.openColumnFromModelConfig',
+                                title: 'Open Column',
+                                arguments: [col]
+                            }
                         )
                 )
                 : [
@@ -102,7 +115,13 @@ export class ModelConfigProvider implements vscode.TreeDataProvider<ConfigItem> 
                         col,
                         vscode.TreeItemCollapsibleState.None,
                         'dummy-item',
-                        col
+                        col,
+                        col === this.baseCaseDummy,
+                        {
+                            command: 'db-extension.openColumnFromModelConfig',
+                            title: 'Open Column',
+                            arguments: [col]
+                        }
                     )
             );
         }
@@ -136,6 +155,34 @@ export class ModelConfigProvider implements vscode.TreeDataProvider<ConfigItem> 
     getDummyColumns(): string[] {
         return this.dummyColumns;
     }
+
+    removeXColumn(column: string): void {
+        this.xColumns = this.xColumns.filter(col => col !== column);
+        this.refresh();
+    }
+
+    removeYColumn(): void {
+        this.yColumn = null;
+        this.refresh();
+    }
+
+    removeDummyColumn(column: string): void {
+        this.dummyColumns = this.dummyColumns.filter(col => col !== column);
+        // If removed column was base case, clear it
+        if (this.baseCaseDummy === column) {
+            this.baseCaseDummy = null;
+        }
+        this.refresh();
+    }
+
+    setBaseCaseDummy(column: string | null): void {
+        this.baseCaseDummy = column;
+        this.refresh();
+    }
+
+    getBaseCaseDummy(): string | null {
+        return this.baseCaseDummy;
+    }
 }
 
 export class ConfigItem extends vscode.TreeItem {
@@ -143,10 +190,20 @@ export class ConfigItem extends vscode.TreeItem {
         public readonly label: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly contextValue: string,
-        public readonly columnName?: string
+        public readonly columnName?: string,
+        public readonly isBaseCaseItem?: boolean,
+        public readonly commandPayload?: vscode.Command
     ) {
-        super(label, collapsibleState);
+        let displayLabel = label;
+        // Add star icon if this is the base case
+        if (isBaseCaseItem) {
+            displayLabel = `★ ${label} (base case)`;
+        }
+        super(displayLabel, collapsibleState);
         this.tooltip = label;
+        if (commandPayload) {
+            this.command = commandPayload;
+        }
 
         // Add icons based on type
         if (contextValue === 'ycol-item') {

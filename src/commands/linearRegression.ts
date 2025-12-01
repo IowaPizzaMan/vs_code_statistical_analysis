@@ -6,6 +6,7 @@ import { detectCategoricalColumns, createDummyVariables } from '../utils/dummyVa
 import { RegressionHistoryService } from '../services/regressionHistoryService';
 import { ModelConfigProvider } from '../providers/modelConfigProvider';
 import { HistoryProvider } from '../providers/historyProvider';
+import { CsvPreviewPanel } from '../providers/csvPreviewPanel';
 
 export function registerLinearRegression(
     provider: LinearRegressionProvider,
@@ -16,7 +17,11 @@ export function registerLinearRegression(
 ): vscode.Disposable[] {
     const disposables: vscode.Disposable[] = [];
 
-    // Command to select a CSV file
+    // Decoration types to reuse for highlighting
+    const headerDecorationType = vscode.window.createTextEditorDecorationType({});
+    const cellDecorationType = vscode.window.createTextEditorDecorationType({ backgroundColor: 'rgba(135,206,250,0.12)' });
+
+    // Command to select a CSV file (also open it in the editor)
     disposables.push(
         vscode.commands.registerCommand('db-extension.selectCsvFile', async (filePath: string) => {
             provider.clearSelectedXColumns();
@@ -24,8 +29,23 @@ export function registerLinearRegression(
             modelConfigProvider.setXColumns([]);
             modelConfigProvider.setYColumn(null);
             modelConfigProvider.setDummyColumns([]);
+
+            // Try to open the CSV in an editor so the user can see the file
+            try {
+                const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
+                await vscode.window.showTextDocument(doc, { preview: true });
+            } catch (err) {
+                console.warn('Could not open CSV file in editor:', err);
+            }
+
             vscode.window.showInformationMessage(`Selected CSV: ${filePath}`);
             provider.refresh();
+            // Refresh decorations in case we have dummies for this file
+            try {
+                await vscode.commands.executeCommand('db-extension.refreshCsvEditorDecorations');
+            } catch (e) {
+                // ignore
+            }
         })
     );
 
@@ -38,6 +58,49 @@ export function registerLinearRegression(
                 if (!file) {
                     vscode.window.showErrorMessage('No CSV file selected.');
                     return;
+                }
+
+                // Open the file and highlight the entire column cells to the user
+                try {
+                    const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
+                    const editor = await vscode.window.showTextDocument(doc, { preview: true });
+
+                    // Determine column index by splitting header
+                    const header = doc.lineAt(0).text;
+                    const headers = header.split(',').map(h => h.trim());
+                    const colIdx = headers.indexOf(column);
+
+                    if (colIdx >= 0) {
+                        // Build selections for each data row for the target column
+                        const selections: vscode.Selection[] = [];
+                        const cellRanges: vscode.Range[] = [];
+                        for (let line = 1; line < doc.lineCount; line++) {
+                            const lineText = doc.lineAt(line).text;
+                            if (!lineText) continue;
+                            const parts = lineText.split(',');
+                            if (colIdx >= parts.length) continue;
+                            // compute start index of this column in the line
+                            let start = 0;
+                            for (let k = 0; k < colIdx; k++) {
+                                start += parts[k].length + 1; // include comma
+                            }
+                            const cellText = parts[colIdx];
+                            const end = start + cellText.length;
+                            const range = new vscode.Range(line, start, line, end);
+                            selections.push(new vscode.Selection(range.start, range.end));
+                            cellRanges.push(range);
+                        }
+
+                        if (selections.length > 0) {
+                            editor.selections = selections;
+                            editor.revealRange(cellRanges[0], vscode.TextEditorRevealType.InCenter);
+
+                            // Also apply a subtle background decoration to all cells in this column
+                            editor.setDecorations(cellDecorationType, cellRanges);
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Could not open CSV file in editor for column reveal:', err);
                 }
 
                 const columnType = await vscode.window.showQuickPick(
@@ -72,27 +135,23 @@ export function registerLinearRegression(
                         // Update config display with dummy variables
                         const allXCols = provider.getSelectedXColumns();
                         modelConfigProvider.setXColumns(allXCols);
+
                         modelConfigProvider.setDummyColumns(
                             allXCols.filter(col => col.includes('_') && !provider.getColumns().includes(col))
                         );
+
+                        // Refresh editor decorations so the user sees the created dummies
+                        try {
+                            await vscode.commands.executeCommand('db-extension.refreshCsvEditorDecorations');
+                        } catch (e) {
+                            // ignore
+                        }
 
                         vscode.window.showInformationMessage(
                             `Created ${dummyNames.length} dummy variables from "${column}"`
                         );
                     } catch (err) {
                         vscode.window.showErrorMessage('Error creating dummy variables: ' + String(err));
-                    }
-                }
-
-                // Check if we have X and Y columns
-                if (provider.getSelectedXColumns().length > 0 && provider.getSelectedYColumn()) {
-                    const autoRun = await vscode.window.showQuickPick(['Yes', 'No'], {
-                        placeHolder: 'Ready to run regression?',
-                        canPickMany: false
-                    });
-
-                    if (autoRun === 'Yes') {
-                        await runRegressionLogic(provider, extensionUri, historyService, modelConfigProvider, historyProvider);
                     }
                 }
             }
@@ -103,6 +162,26 @@ export function registerLinearRegression(
     disposables.push(
         vscode.commands.registerCommand('db-extension.runLinearRegression', async () => {
             await runRegressionLogic(provider, extensionUri, historyService, modelConfigProvider, historyProvider);
+        })
+    );
+
+    // Command to show the CSV preview webview
+    disposables.push(
+        vscode.commands.registerCommand('db-extension.showCsvPreview', async () => {
+            const file = provider.getSelectedFile();
+            if (!file) {
+                vscode.window.showErrorMessage('No CSV file selected for preview.');
+                return;
+            }
+            CsvPreviewPanel.createOrShow(extensionUri, file, provider);
+        })
+    );
+
+    // Command to refresh preview
+    disposables.push(
+        vscode.commands.registerCommand('db-extension.refreshCsvPreview', async () => {
+            const file = provider.getSelectedFile();
+            CsvPreviewPanel.refresh(file, provider);
         })
     );
 
@@ -132,6 +211,8 @@ export function registerLinearRegression(
                     intercept: entry.intercept,
                     rSquared: entry.rSquared,
                     adjustedRSquared: entry.adjustedRSquared,
+                    multipleR: entry.multipleR,
+                    standardError: entry.standardError,
                     predictions: entry.predictions,
                     xColumns: entry.xColumns
                 };
@@ -142,8 +223,146 @@ export function registerLinearRegression(
         })
     );
 
+    // Command to clear CSV file selection (clears all sections)
+    disposables.push(
+        vscode.commands.registerCommand('db-extension.clearCsvFile', async () => {
+            provider.clearSelectedFile();
+            provider.clearSelectedXColumns();
+            provider.setSelectedYColumn(null);
+            provider.clearDummyVariables();
+            modelConfigProvider.setXColumns([]);
+            modelConfigProvider.setYColumn(null);
+            modelConfigProvider.setDummyColumns([]);
+            vscode.window.showInformationMessage('Cleared CSV file and all configuration.');
+            provider.refresh();
+        })
+    );
+
+    // Command to clear X columns only
+    disposables.push(
+        vscode.commands.registerCommand('db-extension.clearXColumns', async () => {
+            provider.clearSelectedXColumns();
+            modelConfigProvider.setXColumns([]);
+            modelConfigProvider.setDummyColumns([]);
+            vscode.window.showInformationMessage('Cleared X columns.');
+            provider.refresh();
+        })
+    );
+
+    // Command to clear Y column only
+    disposables.push(
+        vscode.commands.registerCommand('db-extension.clearYColumn', async () => {
+            provider.setSelectedYColumn(null);
+            modelConfigProvider.setYColumn(null);
+            vscode.window.showInformationMessage('Cleared Y column.');
+            provider.refresh();
+        })
+    );
+
+    // Command to clear dummy variables only
+    disposables.push(
+        vscode.commands.registerCommand('db-extension.clearDummyVariables', async () => {
+            provider.clearDummyVariables();
+            provider.clearSelectedXColumns();
+            modelConfigProvider.setXColumns([]);
+            modelConfigProvider.setDummyColumns([]);
+            vscode.window.showInformationMessage('Cleared dummy variables.');
+            provider.refresh();
+        })
+    );
+
+    // Command to refresh CSV editor decorations so the open editor reflects created/removed dummies
+    disposables.push(
+        vscode.commands.registerCommand('db-extension.refreshCsvEditorDecorations', async () => {
+            const editor = vscode.window.activeTextEditor;
+            if (!editor) return;
+            const doc = editor.document;
+            const docPath = doc.uri.fsPath;
+            const selectedFile = provider.getSelectedFile();
+            if (!selectedFile || selectedFile !== docPath) return;
+
+            // Clear previous decorations
+            editor.setDecorations(headerDecorationType, []);
+            editor.setDecorations(cellDecorationType, []);
+
+            const headerText = doc.lineAt(0).text;
+            const headers = headerText.split(',').map(h => h.trim());
+
+            const headerOptions: vscode.DecorationOptions[] = [];
+            const allCellRanges: vscode.Range[] = [];
+
+            for (const col of provider.getColumns()) {
+                const dmap = provider.getDummyVariables(col);
+                const dummyNames = Object.keys(dmap);
+                if (dummyNames.length === 0) continue;
+
+                const colIdx = headers.indexOf(col);
+                if (colIdx < 0) continue;
+
+                const ranges = buildColumnRangesForDocument(doc, colIdx);
+                if (ranges.length === 0) continue;
+
+                const headerRange = ranges[0];
+                const cellRanges = ranges.slice(1);
+
+                headerOptions.push({
+                    range: headerRange,
+                    hoverMessage: `Dummy variables for ${col}: ${dummyNames.join(', ')}`,
+                    renderOptions: {
+                        after: {
+                            contentText: `  Dummies: ${dummyNames.join(', ')}`,
+                            color: 'gray',
+                            fontStyle: 'italic'
+                        }
+                    }
+                });
+
+                allCellRanges.push(...cellRanges);
+            }
+
+            if (headerOptions.length > 0) {
+                editor.setDecorations(headerDecorationType, headerOptions as any);
+            }
+            if (allCellRanges.length > 0) {
+                editor.setDecorations(cellDecorationType, allCellRanges);
+            }
+        })
+    );
+
     return disposables;
 }
+
+// Helper: build ranges for a given column index in a TextDocument
+function buildColumnRangesForDocument(doc: vscode.TextDocument, colIdx: number): vscode.Range[] {
+    const ranges: vscode.Range[] = [];
+    if (colIdx < 0) return ranges;
+    for (let line = 0; line < doc.lineCount; line++) {
+        const lineText = doc.lineAt(line).text;
+        if (line === 0) {
+            // header
+            const parts = lineText.split(',');
+            if (colIdx >= parts.length) continue;
+            let start = 0;
+            for (let k = 0; k < colIdx; k++) start += parts[k].length + 1;
+            const end = start + parts[colIdx].length;
+            ranges.push(new vscode.Range(0, start, 0, end));
+            continue;
+        }
+
+        if (!lineText) continue;
+        const parts = lineText.split(',');
+        if (colIdx >= parts.length) continue;
+        let start = 0;
+        for (let k = 0; k < colIdx; k++) start += parts[k].length + 1;
+        const end = start + parts[colIdx].length;
+        ranges.push(new vscode.Range(line, start, line, end));
+    }
+    return ranges;
+}
+
+// Command to refresh editor decorations based on current provider/model config
+// registered via a closure above; we need access to provider and modelConfigProvider
+// We'll register this command inside the function to capture the closures.
 
 async function runRegressionLogic(
     provider: LinearRegressionProvider,
@@ -155,6 +374,11 @@ async function runRegressionLogic(
     const file = provider.getSelectedFile();
     const xColumns = provider.getSelectedXColumns();
     const yColumn = provider.getSelectedYColumn();
+
+    console.log('=== REGRESSION COMMAND EXECUTION ===');
+    console.log('File:', file);
+    console.log('X Columns:', xColumns);
+    console.log('Y Column:', yColumn);
 
     if (!file) {
         vscode.window.showErrorMessage('No CSV file selected. Please select a file first.');
@@ -182,8 +406,10 @@ async function runRegressionLogic(
                 dummyVariablesData[col] = dummies;
             }
         }
+        console.log('Dummy variables data:', dummyVariablesData);
 
         const results = await performLinearRegression(file, xColumns, yColumn, dummyVariablesData);
+        console.log('Results from performLinearRegression:', results);
 
         // Record in history
         historyService.addEntry(
@@ -191,6 +417,8 @@ async function runRegressionLogic(
             yColumn,
             results.rSquared,
             results.adjustedRSquared,
+            results.multipleR,
+            results.standardError,
             results.intercept,
             results.slopes,
             results.predictions
@@ -209,6 +437,7 @@ async function runRegressionLogic(
         // Create or show the results panel
         RegressionResultsPanel.createOrShow(extensionUri);
         if (RegressionResultsPanel.currentPanel) {
+            console.log('About to show results with:', { xColumns, yColumn, results });
             RegressionResultsPanel.currentPanel.showResults(xColumns, yColumn, results);
         }
 

@@ -68,6 +68,54 @@
         "command": "db-extension.restoreModel",
         "title": "🔄 Restore Model",
         "icon": "$(debug-restart)"
+      },
+      {
+        "command": "db-extension.removeXColumn",
+        "title": "❌ Remove X Column"
+      },
+      {
+        "command": "db-extension.removeYColumn",
+        "title": "❌ Remove Y Column"
+      },
+      {
+        "command": "db-extension.removeDummyColumn",
+        "title": "❌ Remove Dummy Column"
+      },
+      {
+        "command": "db-extension.setDummyVariableBaseCase",
+        "title": "⭐ Set as Base Case"
+      },
+      {
+        "command": "db-extension.clearCsvFile",
+        "title": "🗑️ Clear CSV File",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "db-extension.clearXColumns",
+        "title": "🗑️ Clear X Columns",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "db-extension.clearYColumn",
+        "title": "🗑️ Clear Y Column",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "db-extension.clearDummyVariables",
+        "title": "🗑️ Clear Dummy Variables",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "db-extension.openColumnFromModelConfig",
+        "title": "Open Column in CSV"
+      },
+      {
+        "command": "db-extension.showCsvPreview",
+        "title": "Show CSV Preview"
+      },
+      {
+        "command": "db-extension.refreshCsvPreview",
+        "title": "Refresh CSV Preview"
       }
     ],
     "menus": {
@@ -76,6 +124,26 @@
           "command": "db-extension.runLinearRegression",
           "when": "view == csvFileExplorer",
           "group": "navigation"
+        },
+        {
+          "command": "db-extension.clearCsvFile",
+          "when": "view == csvFileExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "db-extension.clearXColumns",
+          "when": "view == modelConfig",
+          "group": "navigation"
+        },
+        {
+          "command": "db-extension.clearYColumn",
+          "when": "view == modelConfig",
+          "group": "navigation"
+        },
+        {
+          "command": "db-extension.clearDummyVariables",
+          "when": "view == modelConfig",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -83,6 +151,36 @@
           "command": "db-extension.selectColumn",
           "when": "view == csvFileExplorer && viewItem == column",
           "group": "inline"
+        },
+        {
+          "command": "db-extension.removeXColumn",
+          "when": "view == modelConfig && viewItem == xcol-item",
+          "group": "inline"
+        },
+        {
+          "command": "db-extension.removeYColumn",
+          "when": "view == modelConfig && viewItem == ycol-item",
+          "group": "inline"
+        },
+        {
+          "command": "db-extension.removeDummyColumn",
+          "when": "view == modelConfig && viewItem == dummy-item",
+          "group": "inline"
+        },
+        {
+          "command": "db-extension.setDummyVariableBaseCase",
+          "when": "view == modelConfig && viewItem == dummy-item",
+          "group": "inline"
+        },
+        {
+          "command": "db-extension.openColumnFromModelConfig",
+          "when": "view == modelConfig && (viewItem == xcol-item || viewItem == ycol-item || viewItem == dummy-item)",
+          "group": "inline"
+        },
+        {
+          "command": "db-extension.showCsvPreview",
+          "when": "view == modelConfig",
+          "group": "navigation"
         }
       ]
     }
