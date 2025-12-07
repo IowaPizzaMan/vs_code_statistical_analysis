@@ -57,7 +57,7 @@ export async function detectCategoricalColumns(filePath: string): Promise<{ [key
 export async function createDummyVariables(
     filePath: string,
     categoricalColumn: string,
-    excludeFirst: boolean = true
+    baseCaseCategory?: string
 ): Promise<{ [key: string]: number[] }> {
     return new Promise((resolve, reject) => {
         fs.readFile(filePath, 'utf-8', (err, data) => {
@@ -91,10 +91,16 @@ export async function createDummyVariables(
                 const categoryList = Array.from(categories).sort();
                 const dummies: { [key: string]: number[] } = {};
 
-                // Create dummy variable for each category (exclude first if specified)
-                const startIdx = excludeFirst ? 1 : 0;
-                for (let i = startIdx; i < categoryList.length; i++) {
+                // Create dummy variable for each category (exclude base case if specified)
+
+                for (let i = 0; i < categoryList.length; i++) {
                     const category = categoryList[i];
+
+                    // Skip the base case category
+                    if (baseCaseCategory && category === baseCaseCategory) {
+                        continue;
+                    }
+
                     dummies[`${categoricalColumn}_${category}`] = [];
 
                     for (let j = 1; j < rows.length; j++) {

@@ -1,3 +1,4 @@
+// ...existing code...
 import * as vscode from 'vscode';
 import { LinearRegressionProvider } from '../providers/linearRegressionProvider';
 import { RegressionResultsPanel } from '../providers/regressionResultsPanel';
@@ -125,9 +126,16 @@ export function registerLinearRegression(
                     vscode.window.showInformationMessage(`Y column set to: ${column}`);
                 } else if (columnType === 'Create Dummy Variables') {
                     try {
-                        const dummies = await createDummyVariables(file, column, true);
+                        // Create dummy variables first without requiring base case selection
+                        // User can select base case later from the created dummy variables
+                        const dummies = await createDummyVariables(file, column);
                         const dummyNames = Object.keys(dummies);
-
+                        // Remove any previous dummies for this column from selectedXColumns
+                        provider.getSelectedXColumns().forEach(xCol => {
+                            if (xCol.startsWith(column + '_')) {
+                                provider.removeSelectedXColumn(xCol);
+                            }
+                        });
                         // Add all dummy variables as X columns
                         dummyNames.forEach(name => provider.addSelectedXColumn(name));
                         provider.setDummyVariables(column, dummies as any);
@@ -135,7 +143,6 @@ export function registerLinearRegression(
                         // Update config display with dummy variables
                         const allXCols = provider.getSelectedXColumns();
                         modelConfigProvider.setXColumns(allXCols);
-
                         modelConfigProvider.setDummyColumns(
                             allXCols.filter(col => col.includes('_') && !provider.getColumns().includes(col))
                         );
@@ -143,6 +150,17 @@ export function registerLinearRegression(
                         // Refresh editor decorations so the user sees the created dummies
                         try {
                             await vscode.commands.executeCommand('db-extension.refreshCsvEditorDecorations');
+
+                            // Check that all dummy variable columns have a base case selected
+                            for (const col of provider.getColumns()) {
+                                if (provider.hasDummyVariables(col)) {
+                                    const baseCase = modelConfigProvider.getBaseCaseDummy();
+                                    if (!baseCase) {
+                                        vscode.window.showErrorMessage(`Please select a base case for ${col} before running regression.`);
+                                        return;
+                                    }
+                                }
+                            }
                         } catch (e) {
                             // ignore
                         }
@@ -165,25 +183,7 @@ export function registerLinearRegression(
         })
     );
 
-    // Command to show the CSV preview webview
-    disposables.push(
-        vscode.commands.registerCommand('db-extension.showCsvPreview', async () => {
-            const file = provider.getSelectedFile();
-            if (!file) {
-                vscode.window.showErrorMessage('No CSV file selected for preview.');
-                return;
-            }
-            CsvPreviewPanel.createOrShow(extensionUri, file, provider);
-        })
-    );
-
-    // Command to refresh preview
-    disposables.push(
-        vscode.commands.registerCommand('db-extension.refreshCsvPreview', async () => {
-            const file = provider.getSelectedFile();
-            CsvPreviewPanel.refresh(file, provider);
-        })
-    );
+    // ...existing code...
 
     // Command to restore a previous model
     disposables.push(
@@ -408,7 +408,11 @@ async function runRegressionLogic(
         }
         console.log('Dummy variables data:', dummyVariablesData);
 
-        const results = await performLinearRegression(file, xColumns, yColumn, dummyVariablesData);
+        // Get the base case category from model config
+        const baseCaseCategory = modelConfigProvider.getBaseCaseDummy();
+        console.log('Base case category:', baseCaseCategory);
+
+        const results = await performLinearRegression(file, xColumns, yColumn, dummyVariablesData, baseCaseCategory);
         console.log('Results from performLinearRegression:', results);
 
         // Record in history

@@ -162,6 +162,10 @@ export class LinearRegressionProvider implements vscode.TreeDataProvider<LinearR
         return this.dummyVariables.get(column) || {};
     }
 
+    hasDummyVariables(column: string): boolean {
+        return this.dummyVariables.has(column);
+    }
+
     setDummyVariables(column: string, dummies: { [key: string]: number[] }): void {
         this.dummyVariables.set(column, dummies);
     }

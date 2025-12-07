@@ -316,7 +316,8 @@ export async function performLinearRegression(
     filePath: string,
     xColumns: string[],
     yColumn: string,
-    dummyVariables?: { [columnName: string]: { [key: string]: number[] } }
+    dummyVariables?: { [columnName: string]: { [key: string]: number[] } },
+    baseCaseCategory?: string | null
 ): Promise<RegressionResult> {
     return new Promise((resolve, reject) => {
         fs.readFile(filePath, 'utf-8', (err, data) => {
@@ -352,9 +353,15 @@ export async function performLinearRegression(
                         const categories = Object.keys(dummyVariables[colName]);
                         dummyCategoryMap[colName] = categories;
 
-                        // Add dummy names (skip first category as reference)
-                        for (let i = 1; i < categories.length; i++) {
-                            dummyColumnNames.push(`${colName}_${categories[i]}`);
+                        // Add dummy names (skip base case category if specified)
+                        for (const category of categories) {
+                            const fullDummyName = `${colName}_${category}`;
+                            // Skip the base case category - compare full dummy name
+                            if (baseCaseCategory && fullDummyName === baseCaseCategory) {
+                                console.log(`Skipping base case: ${fullDummyName}`);
+                                continue;
+                            }
+                            dummyColumnNames.push(fullDummyName);
                         }
                     }
                 }
@@ -426,9 +433,14 @@ export async function performLinearRegression(
 
                             const cellValue = values[sourceIdx];
 
-                            // Add dummy for each category except the first (reference)
-                            for (let catIdx = 1; catIdx < categories.length; catIdx++) {
-                                const isDummy = cellValue === categories[catIdx] ? 1 : 0;
+                            // Add dummy for each category except the base case
+                            for (const category of categories) {
+                                const fullDummyName = `${colName}_${category}`;
+                                // Skip the base case category - compare full dummy name
+                                if (baseCaseCategory && fullDummyName === baseCaseCategory) {
+                                    continue;
+                                }
+                                const isDummy = cellValue === category ? 1 : 0;
                                 dataRow.push(isDummy);
                             }
                         }

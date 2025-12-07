@@ -9,10 +9,6 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:db-extension.helloWorld",
-    "onCommand:db-extension.showActiveFile"
-  ],
   "main": "./dist/extension.js",
   "contributes": {
     "viewsContainers": {

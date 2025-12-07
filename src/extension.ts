@@ -15,20 +15,25 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
+	console.log('=== DB Extension Activation Started ===');
 	console.log('Congratulations, your extension "db-extension" is now active!');
 
 	// Register the Hello World command from the commands module
+	console.log('Registering Hello World command...');
 	const helloDisposable = registerHelloWorld();
 	context.subscriptions.push(helloDisposable);
 
 	// Register the Show Active File command from the commands module
+	console.log('Registering Show Active File command...');
 	const showFileDisposable = registerShowActiveFile();
 	context.subscriptions.push(showFileDisposable);
 
 	// Initialize regression history and model config services
+	console.log('Initializing services and providers...');
 	const historyService = new RegressionHistoryService();
 	const modelConfigProvider = new ModelConfigProvider();
 	const historyProvider = new HistoryProvider(historyService);
+	console.log('Services initialized successfully');
 
 	// Set up Linear Regression Tree View
 	const workspaceRoot =
@@ -37,24 +42,29 @@ export function activate(context: vscode.ExtensionContext) {
 			: undefined;
 	const linearRegressionProvider = new LinearRegressionProvider(workspaceRoot);
 
+	console.log('Creating tree views...');
 	const csvFileTreeView = vscode.window.createTreeView('csvFileExplorer', {
 		treeDataProvider: linearRegressionProvider
 	});
 	context.subscriptions.push(csvFileTreeView);
+	console.log('CSV File Explorer tree view created');
 
 	// Set up Model Configuration Tree View
 	const modelConfigTreeView = vscode.window.createTreeView('modelConfig', {
 		treeDataProvider: modelConfigProvider
 	});
 	context.subscriptions.push(modelConfigTreeView);
+	console.log('Model Config tree view created');
 
 	// Set up Regression History Tree View
 	const historyTreeView = vscode.window.createTreeView('regressionHistory', {
 		treeDataProvider: historyProvider
 	});
 	context.subscriptions.push(historyTreeView);
+	console.log('Regression History tree view created');
 
 	// Register Linear Regression commands
+	console.log('Registering Linear Regression commands...');
 	const linearRegressionDisposables = registerLinearRegression(
 		linearRegressionProvider,
 		context.extensionUri,
@@ -63,8 +73,10 @@ export function activate(context: vscode.ExtensionContext) {
 		historyProvider
 	);
 	linearRegressionDisposables.forEach(d => context.subscriptions.push(d));
+	console.log(`Registered ${linearRegressionDisposables.length} Linear Regression commands`);
 
 	// Register model config remove commands
+	console.log('Registering model config commands...');
 	context.subscriptions.push(
 		vscode.commands.registerCommand('db-extension.removeXColumn', (item: any) => {
 			const columnName = item.columnName || item.label;
@@ -73,6 +85,7 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showInformationMessage(`Removed X column: ${columnName}`);
 		})
 	);
+	console.log('Registered removeXColumn command');
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('db-extension.removeYColumn', () => {
@@ -133,18 +146,16 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
+	console.log('Registering setDummyVariableBaseCase command...');
 	context.subscriptions.push(
 		vscode.commands.registerCommand('db-extension.setDummyVariableBaseCase', async (item: any) => {
+			console.log('setDummyVariableBaseCase command called with item:', item);
 			const columnName = item.columnName || item.label;
-			const selection = await vscode.window.showQuickPick(['Yes', 'No'], {
-				placeHolder: `Set "${columnName}" as the base case?`,
-				canPickMany: false
-			});
-
-			if (selection === 'Yes') {
-				modelConfigProvider.setBaseCaseDummy(columnName);
-				vscode.window.showInformationMessage(`"${columnName}" is now the base case`);
-			}
+			modelConfigProvider.setBaseCaseDummy(columnName);
+			vscode.window.showInformationMessage(`"${columnName}" is now the base case`);
 		})
 	);
+	console.log('setDummyVariableBaseCase command registered successfully');
+	console.log('=== DB Extension Activation Complete ===');
+	console.log(`Total subscriptions: ${context.subscriptions.length}`);
 }
